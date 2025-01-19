@@ -269,6 +269,16 @@ Process creation and termination.
         instructions from interrupt handler.
     \end{enumerate}
 
+    \item \textbf{What happens during a mode switch when the operating system returns to the interrupted process?}
+
+    After interrupt is handled operating system restores the context of
+    interrupted process:
+    \begin{enumerate}
+        \item Restore PC: Address saved in the \textbf{EPC} register in part b
+        is copied back to the \textbf{PC} register.
+        \item Switch to User Mode: Processor changes mode from system to user, restricting access to \textbf{EPC}, \textbf{K0}, and \textbf{K1}.
+        \item Resume Execution: Process continues execution from  address now stored in the \textbf{PC} register, resuming where it was interrupted.
+    \end{enumerate}
 \end{enumerate}
 
 \newpage
