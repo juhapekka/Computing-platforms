@@ -96,24 +96,33 @@ week 1}
 \exercise{1}
 Pick an operating system of your choice and answer the following questions.
 \begin{enumerate}[label=\textbf{\alph*})]
-    \item MacOS
-    \item   CLI program on MacOS to monitor running programs is {\bf ps}.
+    \item {\bf What is the operating system you chose?}
+    
+    MacOS
+    \item {\bf What function/program can you use to find
+    information of the running processes in this OS?}
+    
+    CLI program on MacOS to monitor running programs is {\bf ps}.
     System level API for same information is found in {\bf sysctl} call.
-    \item Let's select running VSCode app for inspection (PID 5112 below):
+\pagebreak
+    \item {\bf Pick one process and list all information of
+    the process you find relevant.}
+    
+    Let's select running VSCode app for inspection (PID 5112 below):
 
     \begin{lstlisting}[
         style=pidstyle
     ]
-    $ ps|grep -i "Visual Studio Code.app"
-    #\textcolor{black}{34048}# ttys008    0:00.01 grep -i Visual Studio Code.app
-    #\textcolor{red}{5112}#  ttys011    0:00.02 /opt/homebrew/bin/bash --init-file /Applications/Visual Studio Code.app/Contents/Resources/app/out/vs/workbench/contrib/terminal/common/scripts/shellIntegration-bash.sh
+$ ps|grep -i "Visual Studio Code.app"
+#\textcolor{black}{34048}# ttys008    0:00.01 grep -i Visual Studio Code.app
+#\textcolor{red}{5112}#  ttys011    0:00.02 /opt/homebrew/bin/bash --init-file /Applications/Visual Studio Code.app/Contents/Resources/app/out/vs/workbench/contrib/terminal/common/scripts/shellIntegration-bash.sh
     \end{lstlisting}
 
     We can get all the essential information using command:
     \begin{lstlisting}[
         style=pidstyle
     ]
-        ps -p 5112 -o pid,ppid,uid,user,%cpu,%mem,vsz,rss,tty,stat,start,time,command
+ps -p 5112 -o pid,ppid,uid,user,%cpu,%mem,vsz,rss,tty,stat,start,time,command
     \end{lstlisting}
     which give
     \begin{lstlisting}[
@@ -121,8 +130,8 @@ Pick an operating system of your choice and answer the following questions.
         xleftmargin=-1cm,
         framexleftmargin=-1cm
     ]
-        PID  PPID   UID USER  %CPU %MEM      VSZ    RSS TTY      STAT STARTED      TIME COMMAND
-        5112  5097   501 juha   0,0  0,0 410296320    208 ttys011  Ss+  11Tam25   0:00.02 /opt/homebrew/bin/bash --init-file /Applications/Visual Studio Code.app/Contents/Resources/app/out/vs/workbench/contrib/terminal/common/scripts/shellIntegration-bash.sh
+PID  PPID   UID USER  %CPU %MEM      VSZ    RSS TTY      STAT STARTED TIME COMMAND
+5112  5097   501 juha   0,0  0,0 410296320    208 ttys011  Ss+  11Tam25   0:00.02 /opt/homebrew/bin/bash --init-file /Applications/Visual Studio Code.app/Contents/Resources/app/out/vs/workbench/contrib/terminal/common/scripts/shellIntegration-bash.sh
     \end{lstlisting}
 
     Legend for above listed process information:

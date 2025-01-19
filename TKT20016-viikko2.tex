@@ -1,0 +1,137 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{titling}
+\usepackage{titlesec}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+\usepackage{lipsum}
+\usepackage{comment}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{longtable}
+\usepackage{cite}
+
+
+\lstdefinestyle{pidstyle}{
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    escapechar=\#, % Define escape character for inline LaTeX commands
+    linewidth=\textwidth,
+    basicstyle=\ttfamily\scriptsize
+}
+
+\renewcommand{\maketitle}{%
+  \begin{leftmark}
+    \vspace*{\baselineskip} % Add a bit of vertical space
+
+%    \includegraphics[width=4cm]{example-image-a} % Add an image before the title. you will need to replace the image path with your own
+
+%    \vspace{0.5cm} % Add vertical space before title
+
+    \textbf{\fontsize{18}{36}\selectfont \thetitle} % Font Size and Bold Title
+
+     \vspace{0.05cm} % Add vertical space before subtitle
+%    \textit{\Large \theauthor}  % Subtitle / Author
+    \vspace{\baselineskip} % Add vertical space after subtitle
+     \rule{\textwidth}{0.4pt} % Add a horizontal line
+
+   \end{leftmark}
+%    \thispagestyle{empty} % Prevent header/footer on the title page
+}
+
+
+% Section Formatting
+\titleformat{\section}
+  {\normalfont\fontsize{18}{22}\bfseries} % Font and style
+  {\thesection}         % Section number
+  {1em}                   % Horizontal space after section number
+  {}                     % Code before the section name
+  []                     % Code after the section name
+
+\titleformat{\subsection}
+  {\normalfont\fontsize{14}{18}\bfseries} % Font and style
+  {\thesubsection}         % Subsection number
+  {1em}                   % Horizontal space after subsection number
+  {}                     % Code before the subsection name
+  []                     % Code after the subsection name
+
+\setlength{\parindent}{0pt}
+
+\title{Computing platforms (Spring 2025)\newline
+week 2}
+\author{Juha-Pekka Heikkilä}
+
+
+
+\pagestyle{fancy}
+\fancyhf{}
+
+\renewcommand{\headrulewidth}{0pt}
+
+\newcommand{\footerline}{\makebox[\textwidth]{\hrulefill}}
+
+\newcommand{\footercontent}{%
+    \begin{tabular}{@{}l@{}}
+        \footerline \\
+        \leftmark \hfill \rlap{\thepage}
+    \end{tabular}
+}
+
+\fancyfoot[C]{\footercontent}
+
+
+\newcommand{\exercise}[1]{
+    \section*{Exercise #1}
+    \markboth{Exercise #1}{}
+}
+
+
+
+\begin{document}
+\maketitle
+
+
+\exercise{1}
+{\bf Multicore. Suppose a single application is running on
+a multicore system with 16 processors. If 20\% of the code
+is inherently serial, what is the performance gain over
+a single processor system? What would it be if only 2\% of
+the code would be inherently serial?}
+
+Using Amdahl's Law \cite{stallings4.3}:
+\[
+S = \frac{1}{(1 - f) + \frac{f}{N}}
+\]
+where:
+\begin{itemize}
+    \item \( 1 - f \): Fraction of the code that is inherently serial.
+    \item \( f \): Fraction of the code that is parallelizable.
+    \item \( N = 16 \): Number of processors.
+\end{itemize}
+
+\begin{enumerate}[label=\textbf{\alph*})]
+    \item \textbf{20\% Serial Code (\( 1 - f = 0.2 \), \( f = 0.8 \))}
+
+    Substitute into the formula:
+    \[
+    S = \frac{1}{(1 - 0.8) + \frac{0.8}{16}} = \frac{1}{0.2 + 0.05} = \frac{1}{0.25} = 4
+    \]
+
+    \textbf{Performance Gain:} \( S = 4 \).
+
+    \item \textbf{2\% Serial Code (\( 1 - f = 0.02 \), \( f = 0.98 \))}
+
+    Substitute into the formula:
+    \[
+    S = \frac{1}{(1 - 0.98) + \frac{0.98}{16}} = \frac{1}{0.02 + 0.06125} = \frac{1}{0.08125} \approx 12.31
+    \]
+
+    \textbf{Performance Gain:} \( S \approx 12.31 \).
+\end{enumerate}
+
+\newpage
+\bibliographystyle{plain}
+\bibliography{references}
+\end{document}
