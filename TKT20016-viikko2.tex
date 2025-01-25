@@ -620,8 +620,8 @@ Order by shortest runtime first: \(D \to C \to A \to B.\) \newline
     \item Now add one more bit of tracing, to show the status
     of each CPU cache for each job, with the -C flag. For each
     job, each cache will either show a blank space (if the cache
-    is cold for that job) or a ’w’ (if the cache is warm for that
-    job). At what point does the cache become warm for job ’a’ in
+    is cold for that job) or a 'w' (if the cache is warm for that
+    job). At what point does the cache become warm for job 'a' in
     this simple example? What happens as you change the warmup time
     parameter (-w) to lower or higher values than the default?
 
@@ -682,6 +682,155 @@ Order by shortest runtime first: \(D \to C \to A \to B.\) \newline
     When cache warmup has happened ticks remaining for job start to
     decrease faster, shorter warmup time will reduce total ticks faster
     making total time for job shorter.
+\end{enumerate}
+\newpage
+
+\exercise{5} 
+Multiprocessor scheduling (cont’d). We continue from previous exercise,
+that is, use the simulator multi.py as in previous exercise, and
+answer the homework questions 5-7 from OSTEP Chapter 10.
+
+\begin{enumerate}[label=\textbf{\arabic*}), start=5]
+    \item Let's run the following three jobs on a two-CPU system
+    (i.e., type ./multi.py -n 2 -L a:100:100,b:100:50,c:100:50)
+    Can you predict how long this will take, given a round-robin
+    centralized scheduler? Use -c to see if you were right, and
+    then dive down into details with -t.
+    {\scriptsize
+    \begin{verbatim}
+        $ python3 ./multi.py -n 2 -L a:100:100,b:100:50,c:100:50 -c
+        ARG seed 0
+        ARG job_num 3
+        ARG max_run 100
+        ARG max_wset 200
+        ARG job_list a:100:100,b:100:50,c:100:50
+        ARG affinity 
+        ARG per_cpu_queues False
+        ARG num_cpus 2
+        ARG quantum 10
+        ARG peek_interval 30
+        ARG warmup_time 10
+        ARG cache_size 100
+        ARG random_order False
+        ARG trace False
+        ARG trace_time False
+        ARG trace_cache False
+        ARG trace_sched False
+        ARG compute True
+        
+        Job name:a run_time:100 working_set_size:100
+        Job name:b run_time:100 working_set_size:50
+        Job name:c run_time:100 working_set_size:50
+        
+        Scheduler central queue: ['a', 'b', 'c']
+        
+        
+        Finished time 150
+        
+        Per-CPU stats
+          CPU 0  utilization 100.00 [ warm 0.00 ]
+          CPU 1  utilization 100.00 [ warm 0.00 ]
+    \end{verbatim}
+    }
+    Jobs finish with 150 ticks. Dummy round robin scheduling without
+    considering job cpu history cause losing caches often.
+
+\newpage
+    \item Now we’ll apply some explicit controls to study
+    cache affinity, as described in the chapter. To do this,
+    you'll need the -A flag. This flag can be used to limit which
+    CPUs the scheduler can place a particular job upon.
+    Can you predict how fast this version will run? Why does it
+    do better? Will other combinations of 'a', 'b', and 'c' onto
+    the two processors run faster or slower?
+    {\scriptsize
+    \begin{verbatim}
+        $ python3 ./multi.py -n 2 -L a:100:100,b:100:50,c:100:50 -A a:0,b:1,c:1 -c
+        ARG seed 0
+        ARG job_num 3
+        ARG max_run 100
+        ARG max_wset 200
+        ARG job_list a:100:100,b:100:50,c:100:50
+        ARG affinity a:0,b:1,c:1
+        ARG per_cpu_queues False
+        ARG num_cpus 2
+        ARG quantum 10
+        ARG peek_interval 30
+        ARG warmup_time 10
+        ARG cache_size 100
+        ARG random_order False
+        ARG trace False
+        ARG trace_time False
+        ARG trace_cache False
+        ARG trace_sched False
+        ARG compute True
+        
+        Job name:a run_time:100 working_set_size:100
+        Job name:b run_time:100 working_set_size:50
+        Job name:c run_time:100 working_set_size:50
+        
+        Scheduler central queue: ['a', 'b', 'c']
+        
+        
+        Finished time 110
+        
+        Per-CPU stats
+          CPU 0  utilization 50.00 [ warm 40.91 ]
+          CPU 1  utilization 100.00 [ warm 81.82 ]
+    \end{verbatim}
+    }
+    Jobs finish now at 110 (instead of 150) because caches are not
+    lost.
+\newpage
+    \item One interesting aspect of caching multiprocessors is
+    the opportunity for better-than-expected speed up of jobs
+    when using multiple CPUs (and their caches) as compared to
+    running jobs on a single processor. Specifically, when you
+    run on N CPUs, sometimes you can speed up by more than
+    a factor of N, a situation entitled super-linear speedup.
+    What do you notice about performance as the number of CPUs
+    scales? Use -c to confirm your guesses, and other tracing
+    flags to dive even deeper.
+    {\scriptsize
+    \begin{verbatim}
+        $ python3 ./multi.py -n 3 -L a:100:100,b:100:100,c:100:100 -M 100  -c
+        ARG seed 0
+        ARG job_num 3
+        ARG max_run 100
+        ARG max_wset 200
+        ARG job_list a:100:100,b:100:100,c:100:100
+        ARG affinity 
+        ARG per_cpu_queues False
+        ARG num_cpus 3
+        ARG quantum 10
+        ARG peek_interval 30
+        ARG warmup_time 10
+        ARG cache_size 100
+        ARG random_order False
+        ARG trace False
+        ARG trace_time False
+        ARG trace_cache False
+        ARG trace_sched False
+        ARG compute True
+        
+        Job name:a run_time:100 working_set_size:100
+        Job name:b run_time:100 working_set_size:100
+        Job name:c run_time:100 working_set_size:100
+        
+        Scheduler central queue: ['a', 'b', 'c']
+        
+        
+        Finished time 55
+        
+        Per-CPU stats
+          CPU 0  utilization 100.00 [ warm 81.82 ]
+          CPU 1  utilization 100.00 [ warm 81.82 ]
+          CPU 2  utilization 100.00 [ warm 81.82 ]
+    \end{verbatim}
+    }
+    When CPU \# equal to job \# and cache size is big enough to fit
+    working set caches are never lost hence caches after warmup
+    operate optimally.
 \end{enumerate}
 
 \newpage
