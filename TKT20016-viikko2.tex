@@ -398,7 +398,6 @@ Order by shortest runtime first: \(D \to C \to A \to B.\) \newline
     a ticket imbalance do to the behavior of lottery scheduling?
 
     {\scriptsize
-
     \begin{verbatim}
         $ python3 ./lottery.py -s 1 -l 10:1,10:100
         ARG jlist 10:1,10:100
@@ -442,7 +441,248 @@ Order by shortest runtime first: \(D \to C \to A \to B.\) \newline
     Imbalance causes job 1 'dominate' cpu and job 0 will starve.
 \end{enumerate}
 
+\newpage
 
+\exercise{4} Multiprocessor scheduling.
+\begin{enumerate}[label=\textbf{\arabic*}), start=1]
+    \item The first simulation
+    will run just one job, which has a run-time of 30, and a working-set
+    size of 200. Run this job (called job ’a’ here) on one simulated CPU
+    as follows: ./multi.py -n 1 -L a:30:200. How long will it
+    take to complete?
+    {\scriptsize
+    \begin{verbatim}
+        python3 ./multi.py -n 1 -L a:30:200 -c -t
+        ARG seed 0
+        ARG job_num 3
+        ARG max_run 100
+        ARG max_wset 200
+        ARG job_list a:30:200
+        ARG affinity 
+        ARG per_cpu_queues False
+        ARG num_cpus 1
+        ARG quantum 10
+        ARG peek_interval 30
+        ARG warmup_time 10
+        ARG cache_size 100
+        ARG random_order False
+        ARG trace True
+        ARG trace_time False
+        ARG trace_cache False
+        ARG trace_sched False
+        ARG compute True
+        
+        Job name:a run_time:30 working_set_size:200
+        
+        Scheduler central queue: ['a']
+        
+           0   a      
+           1   a      
+           2   a      
+           3   a      
+           4   a      
+           5   a      
+           6   a      
+           7   a      
+           8   a      
+           9   a      
+        ----------
+          10   a      
+          11   a      
+          12   a      
+          13   a      
+          14   a      
+          15   a      
+          16   a      
+          17   a      
+          18   a      
+          19   a      
+        ----------
+          20   a      
+          21   a      
+          22   a      
+          23   a      
+          24   a      
+          25   a      
+          26   a      
+          27   a      
+          28   a      
+          29   a      
+        
+        Finished time 30
+        
+        Per-CPU stats
+        CPU 0  utilization 100.00 [ warm 0.00 ]
+    \end{verbatim}
+    }
+    job will complete in 30 ticks.
+    \newpage
+    \item  Now increase the cache size so as to make the job’s working
+    set (size=200) fit into the cache (which, by default, is size=100);
+    for example, run ./multi.py -n 1 -L a:30:200 -M 300. Can you
+    predict how fast the job will run once it fits in cache?
+    {\scriptsize
+    \begin{verbatim}
+        $ python3 ./multi.py -n 1 -L a:30:200 -M 300 -c
+        ARG seed 0
+        ARG job_num 3
+        ARG max_run 100
+        ARG max_wset 200
+        ARG job_list a:30:200
+        ARG affinity 
+        ARG per_cpu_queues False
+        ARG num_cpus 1
+        ARG quantum 10
+        ARG peek_interval 30
+        ARG warmup_time 10
+        ARG cache_size 300
+        ARG random_order False
+        ARG trace False
+        ARG trace_time False
+        ARG trace_cache False
+        ARG trace_sched False
+        ARG compute True
+        
+        Job name:a run_time:30 working_set_size:200
+        
+        Scheduler central queue: ['a']
+        
+        
+        Finished time 20
+        
+        Per-CPU stats
+          CPU 0  utilization 100.00 [ warm 50.00 ]
+    \end{verbatim}
+    }
+    Now job finish in 20 ticks.
+\newpage
+    \item Run the same simulation as above, but this time with time
+    left tracing enabled (-T). This flag shows both the job that was
+    scheduled on a CPU at each time step, as well as how much run-time
+    that job has left after each tick has run. What do you notice
+    about how that second column decreases?
+    {\scriptsize
+    \begin{verbatim}
+        $ python3 ./multi.py -n 1 -L a:30:200 -M 300 -c -T
+        ARG seed 0
+        ARG job_num 3
+        ARG max_run 100
+        ARG max_wset 200
+        ARG job_list a:30:200
+        ARG affinity 
+        ARG per_cpu_queues False
+        ARG num_cpus 1
+        ARG quantum 10
+        ARG peek_interval 30
+        ARG warmup_time 10
+        ARG cache_size 300
+        ARG random_order False
+        ARG trace False
+        ARG trace_time True
+        ARG trace_cache False
+        ARG trace_sched False
+        ARG compute True
+        
+        Job name:a run_time:30 working_set_size:200
+        
+        Scheduler central queue: ['a']
+        
+           0   a [ 29]      
+           1   a [ 28]      
+           2   a [ 27]      
+           3   a [ 26]      
+           4   a [ 25]      
+           5   a [ 24]      
+           6   a [ 23]      
+           7   a [ 22]      
+           8   a [ 21]      
+           9   a [ 20]      
+        ----------------
+          10   a [ 18]      
+          11   a [ 16]      
+          12   a [ 14]      
+          13   a [ 12]      
+          14   a [ 10]      
+          15   a [  8]      
+          16   a [  6]      
+          17   a [  4]      
+          18   a [  2]      
+          19   a [  0]      
+        
+        Finished time 20
+        
+        Per-CPU stats
+          CPU 0  utilization 100.00 [ warm 50.00 ]
+    \end{verbatim}
+    }
+    Once cache warmup is finished, decrease of job time left doubles.
+\newpage
+    \item Now add one more bit of tracing, to show the status
+    of each CPU cache for each job, with the -C flag. For each
+    job, each cache will either show a blank space (if the cache
+    is cold for that job) or a ’w’ (if the cache is warm for that
+    job). At what point does the cache become warm for job ’a’ in
+    this simple example? What happens as you change the warmup time
+    parameter (-w) to lower or higher values than the default?
+
+    {\scriptsize
+    \begin{verbatim}
+        $ python3 ./multi.py -n 1 -L a:30:200 -M 300 -c -T -C
+        ARG seed 0
+        ARG job_num 3
+        ARG max_run 100
+        ARG max_wset 200
+        ARG job_list a:30:200
+        ARG affinity 
+        ARG per_cpu_queues False
+        ARG num_cpus 1
+        ARG quantum 10
+        ARG peek_interval 30
+        ARG warmup_time 10
+        ARG cache_size 300
+        ARG random_order False
+        ARG trace False
+        ARG trace_time True
+        ARG trace_cache True
+        ARG trace_sched False
+        ARG compute True
+        
+        Job name:a run_time:30 working_set_size:200
+        
+        Scheduler central queue: ['a']
+        
+           0   a [ 29] cache[ ]     
+           1   a [ 28] cache[ ]     
+           2   a [ 27] cache[ ]     
+           3   a [ 26] cache[ ]     
+           4   a [ 25] cache[ ]     
+           5   a [ 24] cache[ ]     
+           6   a [ 23] cache[ ]     
+           7   a [ 22] cache[ ]     
+           8   a [ 21] cache[ ]     
+           9   a [ 20] cache[w]     
+        -------------------------
+          10   a [ 18] cache[w]     
+          11   a [ 16] cache[w]     
+          12   a [ 14] cache[w]     
+          13   a [ 12] cache[w]     
+          14   a [ 10] cache[w]     
+          15   a [  8] cache[w]     
+          16   a [  6] cache[w]     
+          17   a [  4] cache[w]     
+          18   a [  2] cache[w]     
+          19   a [  0] cache[w]     
+        
+        Finished time 20
+        
+        Per-CPU stats
+          CPU 0  utilization 100.00 [ warm 50.00 ]
+    \end{verbatim}
+    }
+    When cache warmup has happened ticks remaining for job start to
+    decrease faster, shorter warmup time will reduce total ticks faster
+    making total time for job shorter.
+\end{enumerate}
 
 \newpage
 \bibliographystyle{plain}
