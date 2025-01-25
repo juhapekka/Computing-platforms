@@ -301,6 +301,147 @@ Order by shortest runtime first: \(D \to C \to A \to B.\) \newline
 
 \textbf{Average TAT} = \(\frac{1 + 5 + 10 + 16}{4} = 8\,\text{ms}\)
 
+\newpage
+
+\exercise{3}
+\begin{enumerate}[label=\textbf{\arabic*}), start=1]
+    \item Compute the solutions for simulations with 3 jobs
+    and random seeds of 1, 2
+    
+    
+    \begin{enumerate}[label=\textbf{\arabic*}), start=1]
+        \item seed 1
+        {\scriptsize
+
+        \begin{verbatim}
+            $ python3 ./lottery.py -j 3 -s 1
+            ARG jlist 
+            ARG jobs 3
+            ARG maxlen 10
+            ARG maxticket 100
+            ARG quantum 1
+            ARG seed 1
+            
+            Here is the job list, with the run time of each job: 
+            Job 0 ( length = 1, tickets = 84 )
+            Job 1 ( length = 7, tickets = 25 )
+            Job 2 ( length = 4, tickets = 44 )
+            
+            
+            Here is the set of random numbers you will need (at most):
+            Random 651593
+            Random 788724
+            Random 93859
+            Random 28347
+            Random 835765
+            Random 432767
+            Random 762280
+            Random 2106
+            Random 445387
+            Random 721540
+            Random 228762
+            Random 945271
+        \end{verbatim}
+        }
+    \item seed 2
+    {\scriptsize
+    \begin{verbatim}
+            $ python3 ./lottery.py -j 3 -s 2
+            ARG jlist 
+            ARG jobs 3
+            ARG maxlen 10
+            ARG maxticket 100
+            ARG quantum 1
+            ARG seed 2
+
+            Here is the job list, with the run time of each job: 
+            Job 0 ( length = 9, tickets = 94 )
+            Job 1 ( length = 8, tickets = 73 )
+            Job 2 ( length = 6, tickets = 30 )
+
+
+            Here is the set of random numbers you will need (at most):
+            Random 605944
+            Random 606802
+            Random 581204
+            Random 158383
+            Random 430670
+            Random 393532
+            Random 723012
+            Random 994820
+            Random 949396
+            Random 544177
+            Random 444854
+            Random 268241
+            Random 35924
+            Random 27444
+            Random 464894
+            Random 318465
+            Random 380015
+            Random 891790
+            Random 525753
+            Random 560510
+            Random 236123
+            Random 23858
+            Random 325143
+    \end{verbatim}
+    }
+
+    \end{enumerate}
+    \newpage
+
+    \item Now run with two specific jobs: each of length 10,
+    but one (job 0) with 1 ticket and the other (job 1) with
+    100 (e.g., -l 10:1,10:100). What happens when the number
+    of tickets is so imbalanced? Will job 0 ever run before
+    job 1 completes? How often? In general, what does such 
+    a ticket imbalance do to the behavior of lottery scheduling?
+
+    {\scriptsize
+
+    \begin{verbatim}
+        $ python3 ./lottery.py -s 1 -l 10:1,10:100
+        ARG jlist 10:1,10:100
+        ARG jobs 3
+        ARG maxlen 10
+        ARG maxticket 100
+        ARG quantum 1
+        ARG seed 1
+
+        Here is the job list, with the run time of each job: 
+        Job 0 ( length = 10, tickets = 1 )
+        Job 1 ( length = 10, tickets = 100 )
+
+
+        Here is the set of random numbers you will need (at most):
+        Random 134364
+        Random 847434
+        Random 763775
+        Random 255069
+        Random 495435
+        Random 449491
+        Random 651593
+        Random 788724
+        Random 93859
+        Random 28347
+        Random 835765
+        Random 432767
+        Random 762280
+        Random 2106
+        Random 445387
+        Random 721540
+        Random 228762
+        Random 945271
+        Random 901428
+        Random 30590
+    \end{verbatim}
+    }
+    There are total of 101 tickets, 1 for job 0 and 100 for job 1. Job 0
+    can run before job 1 finish but it is unlikely. Job 0 has 1/101
+    (\(\approx\) 0.99 \%) probability to run before job 1 finish.
+    Imbalance causes job 1 'dominate' cpu and job 0 will starve.
+\end{enumerate}
+
 
 
 \newpage
