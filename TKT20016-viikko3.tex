@@ -99,6 +99,8 @@ week 3}
 
 
 \exercise{1}
+\section*{Address Translation: Segmentation}
+
 32-bit address space, leftmost 4 bits represent segment
 number and remaining 28 bits offset within that segment.
 The segmentation table for a process is as follows:
@@ -193,6 +195,89 @@ Since the offset \texttt{0x1000} exceeds the segment length \texttt{0x0500},
 \textbf{Answer for (b):} The virtual address \(\texttt{0x00001000}\)
 is invalid because the offset exceeds the segment’s size,
 causing segmentation fault.
+
+
+
+
+
+
+
+\newpage
+\exercise{2}
+
+\section*{Address Translation: Paging}
+
+We have a system with:
+\begin{itemize}
+  \item 32-bit virtual addresses
+  \item 4\,KB pages (\(4\,\text{KB} = 2^{12}\,\text{bytes}\))
+  \item A single-level page table
+\end{itemize}
+
+\subsection*{(a) Layout of Virtual Addresses}
+
+Since each page is \(2^{12}\) bytes in size, the \textbf{offset}
+occupies the lower 12 bits of the address. The remaining upper
+20 bits specify the \textbf{page number}. Thus, a 32-bit virtual
+address is divided as follows:
+
+\[
+\underbrace{\text{Page Number}}_{20\text{ bits}}
+\;\big\vert\;
+\underbrace{\text{Offset}}_{12\text{ bits}}
+\]
+
+\[
+\texttt{[ 5 hex digits ] [ 3 hex digits ]}
+\]
+
+\subsection*{(b) Translating Virtual Address \texttt{0x00001234}}
+
+Assume a process has single-level page table shown below:
+
+\bigskip
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Index} & \textbf{Frame Number} \\
+\hline
+0 & 3 \\
+1 & 2 \\
+2 & 7 \\
+3 & 1 \\
+\hline
+\end{tabular}
+\end{center}
+\bigskip
+
+\paragraph{Step 1: Split the Virtual Address.}
+
+\[
+\texttt{0x00001234} \quad \longrightarrow \quad
+\begin{cases}
+\text{Page Number} = 1 \\
+\text{Offset} = 0x234
+\end{cases}
+\]
+
+\paragraph{Step 2: Look Up the Frame.}
+
+Using \(\text{page number} = 1 \longrightarrow \text{Frame Number} = 2\)
+
+
+\paragraph{Step 3: Construct the Physical Address.}
+
+Each frame is also \(4\,\text{KB} = 2^{12}\,\text{bytes}\) hence frame number~2 starts at
+\[
+\underbrace{2 \times 2^{12}}_{\text{Frame Number} \times \text{Frame Size}}
+= 2 \times 0x1000 
+= \texttt{0x2000}.
+\]
+
+and add offset 0x234:
+\[
+\text{Physical Address} = \texttt{0x00002000} + \texttt{0x00000234} = \texttt{0x00002234}.
+\]
 
 
 
