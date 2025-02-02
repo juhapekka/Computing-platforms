@@ -704,6 +704,77 @@ We have:
 
 
 \newpage
-\bibliographystyle{plain}
-\bibliography{references}
+\exercise{5}
+
+
+\section*{Consider “matrix-rowwise.py” and “matrix-columnwise.py”}
+
+\subsection*{(a) Memory Organisation of the Two-Dimensional Table}
+
+In Python ``list of lists'' is stored as a top-level list,
+each element of which is a separate Python list object.
+Therefore, only the references in row \(\texttt{j}\) are contiguous
+within that row's list structure; there is no guarantee that row \(\texttt{j+1}\)
+is adjacent to row \(\texttt{j}\) in memory. Each integer is also a Python object
+on the heap, so even within a single row, the values themselves need not be 
+stored contiguously as raw bytes.
+
+\subsection*{(b) Run both of the codes and measure how
+much time their execution takes}
+\begin{verbatim}
+  $ time python3 ./matrix-columnwise.py 
+  171475500000
+
+  real    0m6.811s
+  user    0m6.607s
+  sys     0m0.199s
+\end{verbatim}
+
+vs.
+
+\begin{verbatim}
+  $ time python3 ./matrix-rowwise.py 
+  171475500000
+  
+  real    0m3.967s
+  user    0m3.778s
+  sys     0m0.185s
+\end{verbatim}
+
+Columnwise reading in this case is slower at reading the memory.
+
+\subsection*{(c) Explain the difference in the running times.}
+\textbf{Row-wise traversal} (\texttt{array[j][i]}) accesses elements from 
+same inner list meaning it follows consecutive memory addresses for that row's pointers,
+improving cache locality.
+\textbf{Column-wise traversal} (\texttt{array[j][i]}) accesses elements from different
+lists (one list per row), meaning each lookup requires fetching a new row's list
+reference, which may be far apart in memory. This leads to more cache misses.
+
+\bigskip
+
+{\scriptsize
+\textbf{Comparison to NumPy Arrays}
+If the same operation were done using a \textbf{NumPy array}, where elements are stored in a \textbf{contiguous block of memory}, cache strides would be effective, and column-wise traversal would be much faster. This demonstrates why NumPy is preferred for numerical computing in Python.
+\begin{verbatim}
+import numpy as np
+
+cols = 7000
+rows = 7000
+array = np.arange(cols, dtype=np.int64).repeat(rows).reshape(rows, cols)
+
+# Compute the sum of all elements (column-wise traversal)
+total_sum = np.sum(array.T)
+
+print(total_sum)
+
+---
+$ time python3 ./numpy-arr.py 
+171475500000
+
+real    0m0.129s
+user    0m0.075s
+sys     0m0.049s
+\end{verbatim}
+}
 \end{document}
