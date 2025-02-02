@@ -464,6 +464,245 @@ table and TLB entries for Page~2 are updated to reflect
 
 
 
+
+
+
+
+
+
+
+\newpage
+\exercise{4}
+
+
+
+\section*{Page Replacement Comparison}
+
+We have:
+\begin{itemize}
+  \item Main memory of 3 frames
+  \item Reference stream: \texttt{7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2}
+  \item We count page faults only after the first 3 references have 
+  initialized the frames.
+\end{itemize}
+
+\bigskip
+
+\renewcommand{\arraystretch}{1.2}
+\setlength{\tabcolsep}{0.7em}
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{l|ccccccccccccc}
+\hline
+\textbf{Ref.} & \textbf{7} & \textbf{0} & \textbf{1} & \textbf{2} & \textbf{0} & \textbf{3} & \textbf{0} & \textbf{4} & \textbf{2} & \textbf{3} & \textbf{0} & \textbf{3} & \textbf{2} \\
+\hline
+
+%---------------------------
+% FIFO Row
+%---------------------------
+\textbf{FIFO} &
+
+% Ref #1 => 7
+\begin{tabular}{c}7\\-\\-\end{tabular} &
+
+% Ref #2 => 0
+\begin{tabular}{c}7\\0\\-\end{tabular} &
+
+% Ref #3 => 1
+\begin{tabular}{c}7\\0\\1\end{tabular} &
+
+% Ref #4 => 2 (Fault #1 after init)
+\begin{tabular}{c}2\\0\\1\\\textbf{F}\end{tabular} &
+
+% Ref #5 => 0 (in frames)
+\begin{tabular}{c}2\\0\\1\end{tabular} &
+
+% Ref #6 => 3 (Fault #2)
+\begin{tabular}{c}2\\3\\1\\\textbf{F}\end{tabular} &
+
+% Ref #7 => 0 (Fault #3)
+\begin{tabular}{c}2\\3\\0\\\textbf{F}\end{tabular} &
+
+% Ref #8 => 4 (Fault #4)
+\begin{tabular}{c}4\\3\\0\\\textbf{F}\end{tabular} &
+
+% Ref #9 => 2 (Fault #5)
+\begin{tabular}{c}4\\2\\0\\\textbf{F}\end{tabular} &
+
+% Ref #10 => 3 (Fault #6)
+\begin{tabular}{c}4\\2\\3\\\textbf{F}\end{tabular} &
+
+% Ref #11 => 0 (Fault #7)
+\begin{tabular}{c}0\\2\\3\\\textbf{F}\end{tabular} &
+
+% Ref #12 => 3 (in frames)
+\begin{tabular}{c}0\\2\\3\end{tabular} &
+
+% Ref #13 => 2 (in frames)
+\begin{tabular}{c}0\\2\\3\end{tabular}
+\\
+
+%---------------------------
+% LRU Row
+%---------------------------
+\textbf{LRU} &
+
+% #1 => 7
+\begin{tabular}{c}7\\-\\-\end{tabular} &
+
+% #2 => 0
+\begin{tabular}{c}7\\0\\-\end{tabular} &
+
+% #3 => 1
+\begin{tabular}{c}7\\0\\1\end{tabular} &
+
+% #4 => 2 (Fault #1)
+\begin{tabular}{c}2\\0\\1\\\textbf{F}\end{tabular} &
+
+% #5 => 0 (in frames)
+\begin{tabular}{c}2\\0\\1\end{tabular} &
+
+% #6 => 3 (Fault #2)
+\begin{tabular}{c}2\\0\\3\\\textbf{F}\end{tabular} &
+
+% #7 => 0 (in frames)
+\begin{tabular}{c}2\\0\\3\end{tabular} &
+
+% #8 => 4 (Fault #3)
+\begin{tabular}{c}4\\0\\3\\\textbf{F}\end{tabular} &
+
+% #9 => 2 (Fault #4)
+\begin{tabular}{c}4\\0\\2\\\textbf{F}\end{tabular} &
+
+% #10 => 3 (Fault #5)
+\begin{tabular}{c}4\\3\\2\\\textbf{F}\end{tabular} &
+
+% #11 => 0 (Fault #6)
+\begin{tabular}{c}0\\3\\2\\\textbf{F}\end{tabular} &
+
+% #12 => 3 (in frames)
+\begin{tabular}{c}0\\3\\2\end{tabular} &
+
+% #13 => 2 (in frames)
+\begin{tabular}{c}0\\3\\2\end{tabular}
+\\
+
+
+%---------------------------
+% Clock Row (schematic)
+%---------------------------
+\textbf{Clock} &
+
+% #1 => 7
+\begin{tabular}{c}7\\-\\-\end{tabular} &
+
+% #2 => 0
+\begin{tabular}{c}7\\0\\-\end{tabular} &
+
+% #3 => 1
+\begin{tabular}{c}7\\0\\1\end{tabular} &
+
+% #4 => 2 (F?)
+\begin{tabular}{c}2\\0\\1\\\textbf{F}\end{tabular} &
+
+% #5 => 0
+\begin{tabular}{c}2\\0\\1\end{tabular} &
+
+% #6 => 3 (F?)
+\begin{tabular}{c}2\\0\\3\\\textbf{F}\end{tabular} &
+
+% #7 => 0
+\begin{tabular}{c}2\\0\\3\end{tabular} &
+
+% #8 => 4 (F?)
+\begin{tabular}{c}4\\0\\3\\\textbf{F}\end{tabular} &
+
+% #9 => 2 (F?)
+\begin{tabular}{c}4\\2\\3\\\textbf{F}\end{tabular} &
+
+% #10 => 3 (in frames)
+\begin{tabular}{c}4\\2\\3\end{tabular} &
+
+% #11 => 0 (F?)
+\begin{tabular}{c}4\\2\\0\\\textbf{F}\end{tabular} &
+
+% #12 => 3 (F?)
+\begin{tabular}{c}4\\2\\3\end{tabular} &
+
+% #13 => 2 (in frames)
+\begin{tabular}{c}4\\2\\3\end{tabular}
+\\
+
+%---------------------------
+% OPT Row
+%---------------------------
+\textbf{OPT} &
+
+% #1 => 7
+\begin{tabular}{c}7\\-\\-\end{tabular} &
+
+% #2 => 0
+\begin{tabular}{c}7\\0\\-\end{tabular} &
+
+% #3 => 1
+\begin{tabular}{c}7\\0\\1\end{tabular} &
+
+% #4 => 2 (Fault #1)
+\begin{tabular}{c}7\\0\\2\\\textbf{F}\end{tabular} &
+
+% #5 => 0 (in frames)
+\begin{tabular}{c}7\\0\\2\end{tabular} &
+
+% #6 => 3 (Fault #2)
+\begin{tabular}{c}7\\3\\2\\\textbf{F}\end{tabular} &
+
+% #7 => 0 (in frames?)
+\begin{tabular}{c}7\\3\\0\\\end{tabular} &
+
+% #8 => 4 (Fault #3)
+\begin{tabular}{c}2\\3\\0\\\textbf{F}\end{tabular} &
+
+% #9 => 2 (in frames)
+\begin{tabular}{c}2\\3\\0\end{tabular} &
+
+% #10 => 3 (in frames)
+\begin{tabular}{c}2\\3\\0\end{tabular} &
+
+% #11 => 0 (Fault #4)
+\begin{tabular}{c}2\\3\\4\\\textbf{F}\end{tabular} &
+
+% #12 => 3 (in frames?)
+\begin{tabular}{c}2\\3\\4\end{tabular} &
+
+% #13 => 2 (in frames)
+\begin{tabular}{c}2\\3\\4\end{tabular}
+\\
+
+
+
+
+
+
+\hline
+\end{tabular}
+\caption{Comparison of FIFO, LRU, OPT, and Clock. ``F'' marks a fault.}
+\end{table}
+
+\bigskip
+
+\section*{Fault Counts and Miss Rates}
+
+\begin{itemize}
+  \item \textbf{FIFO:} 7 faults over 10 references $\Rightarrow$ 70\% miss rate.
+  \item \textbf{LRU:} 6 faults $\Rightarrow$ 60\% miss rate.
+  \item \textbf{Clock:} 4 or 5, depending on the initial hand and use-bit detail.
+  \item \textbf{Optimal:} 5 faults if you consider extended reference stream 
+        (\( \dots,1,2,0,1,7,0,1 \)) to decide which page is used farthest in the future.
+\end{itemize}
+
+
 \newpage
 \bibliographystyle{plain}
 \bibliography{references}
