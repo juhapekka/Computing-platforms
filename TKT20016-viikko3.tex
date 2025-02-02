@@ -281,6 +281,189 @@ and add offset 0x234:
 
 
 
+
+
+
+\newpage
+\exercise{3}
+
+
+\section*{Virtual Memory with Paging and TLB}
+
+We have:
+\begin{itemize}
+  \item 32-bit virtual addresses
+  \item 4\,KB pages (\(4\,\text{KB} = 2^{12}\,\text{bytes}\))
+  \item A single-level page table and a Translation Lookaside Buffer (TLB)
+\end{itemize}
+
+\subsection*{Page Table and TLB Contents}
+
+single-level page table:\newline
+
+\begin{tabular}{|c|c|c|c|}
+  \hline
+  \multicolumn{4}{|c|}{{\bf Page table}} \\
+\hline
+\textbf{Index} & \textbf{Frame Number} & \textbf{M} & \textbf{P} \\
+\hline
+0 & 3 & 0 & 1 \\
+1 & 2 & 0 & 1 \\
+2 & 7 & 0 & 0 \\
+3 & 1 & 1 & 1 \\
+\hline
+\end{tabular}
+\begin{tabular}{|c|c|c|c|c|}
+  \hline
+  \multicolumn{5}{|c|}{{\bf TLB}} \\
+\hline
+\textbf{Index} & \textbf{Page \#} & \textbf{Frame \#} & \textbf{M} & \textbf{P} \\
+\hline
+0 & 3 & 1 & 1 & 1 \\
+1 & 0 & 3 & 0 & 1 \\
+2 &   &   &   & 0 \\
+3 &   &   &   & 0 \\
+\hline
+\end{tabular}
+\begin{itemize}
+  \item \texttt{M = 1} indicates the cached page is modified.
+  \item \texttt{P = 1} indicates the TLB entry is valid (present).
+  \item Entries 2 and 3 are either empty or invalid (\texttt{P = 0}).
+\end{itemize}
+
+\subsection*{Address Format (32-bit, 4\,KB Pages)}
+
+A 32-bit address is split into:
+\[
+\underbrace{\text{Page Number}}_{20 \text{ bits}}
+\;\big\vert\;
+\underbrace{\text{Offset}}_{12 \text{ bits}}
+\]
+Hence, the lower 12 bits (3 hex digits) are the \emph{offset}, and the upper 20 bits are the \emph{page number}.
+
+\newpage
+
+
+
+
+\subsection*{(a) Translating Address \texttt{0x00001123}}
+
+\paragraph{Step 1: Split the Address.}
+\[
+\texttt{0x00001123}
+\]
+\begin{itemize}
+  \item Offset = \texttt{0x123} (the lowest 12 bits)
+  \item Page Number = \texttt{0x1} (the upper 20 bits)
+\end{itemize}
+
+\paragraph{Step 2: TLB Lookup.}
+We check whether the TLB has an entry for Page~1.
+\begin{itemize}
+  \item Index~0 has Page~3.
+  \item Index~1 has Page~0.
+  \item Index~2,3 are invalid.
+\end{itemize}
+No match $\Rightarrow$ \textbf{TLB miss}.
+
+\paragraph{Step 3: Page Table Lookup.}
+From the Page Table:
+\[
+\text{Page~1} \longrightarrow \text{Frame~2}, \; M=0, \; P=1
+\]
+Since \(\texttt{P=1}\), the page is in memory (no page fault).
+
+\paragraph{Step 4: Construct Physical Address.}
+Frame~2 means the base of this frame is:
+\[
+2 \times 2^{12} = \texttt{0x2000}.
+\]
+Adding the offset \texttt{0x123}:
+\[
+\text{Physical Address} = \texttt{0x2000} + \texttt{0x0123} = \texttt{0x2123}.
+\]
+
+\paragraph{Step 5: Update TLB.}
+We add a new TLB entry for Page~1:
+\[
+\begin{aligned}
+  \text{Page No.} &= 1, \\
+  \text{Frame No.} &= 2, \\
+  M &= 0 \; (\text{no writes so far}), \\
+  P &= 1 \; (\text{valid entry}).
+\end{aligned}
+\]
+This typically occupies an empty TLB slot (say Index~2). 
+
+\textbf{The virtual address \(\texttt{0x00001123}\) translates to \(\texttt{0x00002123}\). The TLB is updated to include Page~1 $\to$ Frame~2.}
+
+\newpage
+
+
+
+
+\subsection*{(b) Translating Address \texttt{0x00002333}}
+
+\paragraph{Step 1: Split the Address.}
+\[
+\texttt{0x00002333}
+\]
+\begin{itemize}
+  \item Offset = \texttt{0x333} (lowest 12 bits)
+  \item Page Number = \texttt{0x2} (upper 20 bits)
+\end{itemize}
+
+\paragraph{Step 2: TLB Lookup.}
+We check for Page~2 in the TLB:
+\begin{itemize}
+  \item Index~0 has Page~3,
+  \item Index~1 has Page~0,
+  \item Index~2 (updated above) has Page~1,
+  \item Index~3 is invalid/empty.
+\end{itemize}
+No match $\Rightarrow$ \textbf{we got TLB miss again.}
+
+\paragraph{Step 3: Page Table Lookup.}
+From the Page Table:
+\[
+\text{Page~2} \longrightarrow \text{Frame~7}, \; M=0, \; P=0
+\]
+\(\texttt{P=0}\) means the page is not present in main memory $\Rightarrow$ \textbf{page fault}.
+
+\paragraph{Step 4: Handle Page Fault.}
+The OS must load Page~2 from disk into a free frame. Assume the OS chooses some free frame \(\texttt{F}\). After loading:
+\[
+\begin{aligned}
+  &\text{Page~2 now mapped to Frame } \texttt{F}, \\
+  &M=0 \;(\text{still no writes}), \quad P=1 \;(\text{now present}).
+\end{aligned}
+\]
+The page table is updated accordingly:
+\[
+\text{Page Table}[2] \gets (\texttt{Frame~F}, M=0, P=1).
+\]
+
+\paragraph{Step 5: Construct Physical Address.}
+Once the page is loaded, the physical base address is:
+\[
+\texttt{F} \times 2^{12},
+\]
+and we add the offset \texttt{0x333} to get the final physical address.
+
+\paragraph{Step 6: Update TLB.}
+We add a valid entry for Page~2 in the TLB:
+\[
+\text{Page~2} \longrightarrow \text{Frame~F},\, M=0,\, P=1.
+\]
+
+\textbf{The virtual address \(\texttt{0x00002333}\) causes a page
+fault. After the OS loads Page~2 into some free frame \(\texttt{F}\),
+the physical address is \(\texttt{(F * 0x1000) + 0x333}\). The page
+table and TLB entries for Page~2 are updated to reflect
+\(\texttt{Frame = F}\) and \(\texttt{P=1}\).}
+
+
+
 \newpage
 \bibliographystyle{plain}
 \bibliography{references}
