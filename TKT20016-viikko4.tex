@@ -1,0 +1,349 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{titling}
+\usepackage{titlesec}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+\usepackage{lipsum}
+\usepackage{comment}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{longtable}
+\usepackage{cite}
+\usepackage{pgfgantt}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usepackage[margin=1in]{geometry}
+\usetikzlibrary{calc}
+
+
+\lstdefinestyle{pidstyle}{
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    escapechar=\#, % Define escape character for inline LaTeX commands
+    linewidth=\textwidth,
+    basicstyle=\ttfamily\scriptsize
+}
+
+\renewcommand{\maketitle}{%
+  \begin{leftmark}
+    \vspace*{\baselineskip} % Add a bit of vertical space
+
+%    \includegraphics[width=4cm]{example-image-a} % Add an image before the title. you will need to replace the image path with your own
+
+%    \vspace{0.5cm} % Add vertical space before title
+
+    \textbf{\fontsize{18}{36}\selectfont \thetitle} % Font Size and Bold Title
+
+     \vspace{0.05cm} % Add vertical space before subtitle
+%    \textit{\Large \theauthor}  % Subtitle / Author
+    \vspace{\baselineskip} % Add vertical space after subtitle
+     \rule{\textwidth}{0.4pt} % Add a horizontal line
+
+   \end{leftmark}
+%    \thispagestyle{empty} % Prevent header/footer on the title page
+}
+
+
+% Section Formatting
+\titleformat{\section}
+  {\normalfont\fontsize{18}{22}\bfseries} % Font and style
+  {\thesection}         % Section number
+  {1em}                   % Horizontal space after section number
+  {}                     % Code before the section name
+  []                     % Code after the section name
+
+\titleformat{\subsection}
+  {\normalfont\fontsize{14}{18}\bfseries} % Font and style
+  {\thesubsection}         % Subsection number
+  {1em}                   % Horizontal space after subsection number
+  {}                     % Code before the subsection name
+  []                     % Code after the subsection name
+
+\setlength{\parindent}{0pt}
+
+\title{Computing platforms (Spring 2025)\newline
+week 4}
+\author{Juha-Pekka Heikkilä}
+
+
+
+\pagestyle{fancy}
+\fancyhf{}
+
+\renewcommand{\headrulewidth}{0pt}
+
+\newcommand{\footerline}{\makebox[\textwidth]{\hrulefill}}
+
+\newcommand{\footercontent}{%
+    \begin{tabular}{@{}l@{}}
+        \footerline \\
+        \leftmark \hfill \rlap{\thepage}
+    \end{tabular}
+}
+
+\fancyfoot[C]{\footercontent}
+
+
+\newcommand{\exercise}[1]{
+    \section*{Exercise #1}
+    \markboth{Exercise #1}{}
+}
+
+
+
+\begin{document}
+\maketitle
+
+
+\exercise{1}
+Search the websites of \textbf{AWS, Google Cloud,} and 
+\textbf{Microsoft Azure} and find out answers to the following
+questions for each 3 providers:
+
+\begin{enumerate}
+  \item What services can you use for free? \textbf{All of them }
+  \begin{itemize}
+    \item https://aws.amazon.com/free \cite{aws_free}\newline
+      Free for 12 months.
+    \item https://cloud.google.com/free \cite{gcp_free} \newline
+      Always free.
+    \item https://azure.microsoft.com/en-us/free/ \cite{azure_free} \newline
+      Free for 12 months.  
+  \end{itemize}
+
+
+  \item How much does it cost to run a virtual machine for
+  one day? (Something other than a possibly free plan.)
+  \begin{itemize}
+    \item AWS: t4g.xlarge (4 vCPUs, 16 GB RAM) costs \$0.1344/hour, \$3.2256/day.
+    \item Google Cloud: e2-standard-4 (4 vCPUs, 16 GB RAM) costs \$0.150924/hour, totaling \$3.622176/day.
+    \item Microsoft Azure: B4ms (4 vCPUs, 16 GB RAM) costs \$0.166/hour, totaling \$3.984/day.
+  \end{itemize}
+
+  \item How much does storage cost?
+  \begin{itemize}
+    \item AWS: \$0.023 per GB per month.
+    \item Google Cloud: \$0.023 per GB per month.
+    \item Microsoft Azure: \$0.021 per GB per month.
+  \end{itemize}
+
+  \item Compare prices and expected performance
+  of different VM offerings. Does the price increase
+  linearly with the expected performance? If not, what can
+  you observe? \newline
+  The price does not increase linearly with performance
+  \cite{cloud_pricing_comparison}. Factors such as instance
+  type, underlying hardware, and specific optimizations
+  influence pricing. Compute-optimized instances offer
+  higher performance per vCPU at a lower cost compared
+  to general-purpose instances.
+
+  \item Which of the three is best?\newline
+  The "best" provider depends on use case:
+  \begin{itemize}
+    \item AWS: Broad service range.
+    \item Google Cloud: Strong in data analytics and machine learning.
+    \item Azure: Best for Microsoft-integrated environments.
+  \end{itemize}
+  
+  \item Suppose you work in a company that wants to start
+  using cloud computing. Which of the three would you pick
+  and why?
+  The choice depends on company needs:
+  \begin{itemize}
+    \item For a Microsoft-centric environment, Azure
+    is preferable.
+    \item For scalable web applications, AWS offers
+    a broad service range.
+    \item For data-intensive applications, Google Cloud
+    excels in analytics and AI.
+  \end{itemize}
+
+\end{enumerate}
+
+
+
+
+\newpage
+
+\exercise{2}
+Would cloud computing have taken off in this
+manner without virtualization (VMs or containers)?
+Why or why not?
+  
+  Cloud computing as we know it today would not
+  have taken off in the same manner without virtualization
+  (VMs and containers). Here’s why:
+
+  \begin{itemize}
+    \item \textbf{Efficient Resource Utilization:} Without 
+    virtualization, entire physical machines would have to be
+    allocated to each customer, leading to significant resource
+    waste. Virtualization enables multiple customers to share
+    the same physical server, reducing costs and maximizing
+    hardware utilization.
+
+    \item \textbf{Scalability and Elasticity:} Virtualization
+    allows for on-demand provisioning and scaling of resources.
+
+    \item \textbf{Disaster Recovery and Redundancy:}
+    Virtualization enables snapshotting, live migration,
+    and failover mechanisms, which are critical for disaster
+    recovery.
+
+    \item \textbf{Isolation and Security:} VMs and containers
+    provide isolation between workloads, ensuring that multiple
+    users can run applications on the same physical server
+    without interfering with each other.
+
+    \item \textbf{Cost Reduction:} Cloud computing relies on
+    the economies of scale made possible by virtualization.
+    
+    \item \textbf{Portability and Flexibility:} Containers,
+    in particular, allow applications to be easily moved between
+    environments (e.g., development, testing, and production).
+    
+    \item \textbf{Rapid Deployment and Automation:} With
+    virtualization, cloud providers can automate deployment,
+    orchestration, and management of services.
+
+  \end{itemize}
+
+
+
+
+  \newpage
+
+\exercise{3}
+Cloud computing. Read the article “A View of Cloud Computing” by M. Armbrust et al.
+available at https://dl.acm.org/doi/10.1145/1721654.1721672. The article is written in 2010
+and makes 10 “predictions” (obstacles and opportunities) about how cloud computing will develop.
+Based on the article, your knowledge about cloud computing, and any other material you may find,
+address each of the 10 points. For each of them, classify them as “mostly true”, “partially true”, or
+“mostly untrue” and justify your answer. The classification should reflect the current state of that
+point in modern cloud computing. Note that in many of the points, several options are justifiable and
+no correct answers exist.
+
+\begin{itemize}
+  \item \textbf{Availability/Business Continuity:}\newline
+  Mostly True\newline
+
+  The concern in 2010 was whether cloud providers could offer
+  high availability comparable to traditional IT infrastructure.
+  Today, major cloud providers like AWS, Google Cloud,
+  and Microsoft Azure have multi-region availability zones,
+  automated failover mechanisms, and SLAs guaranteeing 99.9\%+ 
+  uptime. While cloud outages still occur, they are generally
+  less frequent than on-premise failures.
+
+  \item \textbf{Data Lock-in:}
+  Partially True\newline
+
+  Cloud providers still use proprietary storage APIs and
+  management tools, making it difficult for customers
+  to migrate workloads seamlessly. However, the situation
+  has improved with industry-standard APIs, multi-cloud
+  strategies, and containerization technologies
+  
+  \item \textbf{Data Confidentiality and Auditability:}
+  Partially True\newline
+
+  Security in cloud computing has improved significantly
+  with end-to-end encryption, zero-trust architectures,
+  and compliance certifications. However, enterprises
+  still express concerns about data sovereignty and
+  government access to data, particularly in public cloud
+  environments.
+\end{itemize}
+
+
+
+
+\newpage
+
+\exercise{4}
+
+\begin{itemize}
+  \item \textbf{Data Transfer Bottlenecks:}\newline
+  Partialy True\newline
+
+  In 2010, network bandwidth limitations were a major
+  concern for cloud computing adoption. Today, network
+  speeds have improved significantly.However, moving
+  large datasets (petabytes of data) between clouds
+  or from on-premises environments is still slow and costly.
+
+  \item \textbf{Performance Unpredictability:}\newline
+  Mostly True\newline
+
+  Cloud environments share physical resources among
+  multiple tenants, leading to resource contention.
+  This is especially true for network I/O, disk I/O,
+  and CPU allocation on virtual machines. While cloud
+  providers have introduced dedicated instances, custom
+  VM shapes, and optimized scheduling mechanisms,
+  performance variability still exists.
+
+  \item \textbf{Scalable Storage:}\newline
+  Mostly True\newline
+
+  Cloud providers have largely solved the problem
+  of scalable storage through object storage,
+  distributed databases and auto-scaling block storage
+  solutions. However, latency-sensitive applications
+  (e.g., real-time processing) may still face challenges
+  with data consistency and retrieval speeds.
+\end{itemize}
+
+\newpage
+
+
+
+
+\exercise{5}
+
+\begin{itemize}
+  \item \textbf{Bugs in Large Distributed Systems:}\newline
+  Mostly True\newline
+
+  Debugging large-scale distributed systems remains
+  a challenge, as cloud environments introduce complexity,
+  race conditions, and distributed failures that are difficult
+  to reproduce in test environments.
+
+  \item \textbf{Scaling Quickly:}\newline
+  Mostly True\newline
+
+  One of the biggest successes of cloud computing is its
+  ability to scale quickly.
+
+  \item \textbf{Reputation Fate Sharing:}\newline
+  Partially True\newline
+
+  The concern that one cloud user's bad behavior could
+  impact others remains valid but has been mitigated
+  by network isolation, security policies, and managed
+  services. IP blacklisting and shared infrastructure
+  risks still exist, particularly in multi-tenant
+  environments where one customer's activity can lead
+  to service degradation or reputational damage
+
+  \item \textbf{Software Licensing:}\newline
+  Partially True\newline
+
+  In 2010, traditional software licensing models
+  did not align well with cloud computing.
+  Since then, many software vendors have adopted
+  subscription-based and pay-as-you-go pricing models.
+  Still, some enterprise software still has restrictive
+  licensing that complicates cloud migration.
+\end{itemize}
+
+
+\newpage
+\bibliographystyle{plain}
+\bibliography{references}
+\end{document}
