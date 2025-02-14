@@ -1,0 +1,180 @@
+% !TEX program = xelatex
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{titling}
+\usepackage{titlesec}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+\usepackage{lipsum}
+\usepackage{comment}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{longtable}
+%\usepackage{cite}
+\usepackage{pgfgantt}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usepackage[margin=1in]{geometry}
+\usepackage[backend=biber, style=numeric]{biblatex}
+%\usepackage{hyperref}
+\usepackage{bookmark}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{fontspec}
+\setmainfont{Arial}
+\newfontfamily\stylishfont{Noteworthy}
+%\newfontfamily\stylishfont{Zapfino}
+\addbibresource{references.bib}
+\usetikzlibrary{calc}
+
+
+\lstdefinestyle{pidstyle}{
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    escapechar=\#, % Define escape character for inline LaTeX commands
+    linewidth=\textwidth,
+    basicstyle=\ttfamily\scriptsize
+}
+
+\renewcommand{\maketitle}{%
+  \begin{leftmark}
+    \vspace*{\baselineskip} % Add a bit of vertical space
+
+%    \includegraphics[width=4cm]{example-image-a} % Add an image before the title. you will need to replace the image path with your own
+
+%    \vspace{0.5cm} % Add vertical space before title
+
+    \textbf{\fontsize{18}{36}\selectfont \thetitle} % Font Size and Bold Title
+
+     \vspace{0.05cm} % Add vertical space before subtitle
+%    \textit{\Large \theauthor}  % Subtitle / Author
+    \vspace{\baselineskip} % Add vertical space after subtitle
+     \rule{\textwidth}{0.4pt} % Add a horizontal line
+
+   \end{leftmark}
+%    \thispagestyle{empty} % Prevent header/footer on the title page
+}
+
+
+% Section Formatting
+\titleformat{\section}
+  {\normalfont\fontsize{18}{22}\bfseries} % Font and style
+  {\thesection}         % Section number
+  {1em}                   % Horizontal space after section number
+  {}                     % Code before the section name
+  []                     % Code after the section name
+
+\titleformat{\subsection}
+  {\normalfont\fontsize{14}{18}\bfseries} % Font and style
+  {\thesubsection}         % Subsection number
+  {1em}                   % Horizontal space after subsection number
+  {}                     % Code before the subsection name
+  []                     % Code after the subsection name
+
+\setlength{\parindent}{0pt}
+
+\title{Computing platforms (Spring 2025)\newline
+week 5}
+\author{Juha-Pekka Heikkilä}
+
+
+
+\pagestyle{fancy}
+\fancyhf{}
+
+\renewcommand{\headrulewidth}{0pt}
+
+\newcommand{\footerline}{\makebox[\textwidth]{\hrulefill}}
+
+\newcommand{\footercontent}{%
+    \begin{tabular}{@{}l@{}}
+        \footerline \\
+        \leftmark \hfill \rlap{\thepage}
+    \end{tabular}
+}
+
+\fancyfoot[C]{\footercontent}
+
+
+\newcommand{\exercise}[1]{
+    \section*{Exercise #1}
+    \markboth{Exercise #1}{}
+}
+
+
+\begin{document}
+\maketitle
+
+
+\exercise{1}
+\textbf{Synchronous and asynchronous communication.} In
+synchronous communication both communicating parties are
+expected to be present at the same time, while
+in asynchronous communication they can run separate times.
+
+
+\begin{enumerate}[label=\textbf{\makebox[1cm][l]{\Huge\text{(\stylishfont\alph*)}}}, leftmargin=!, labelindent=0pt]
+  \item What if your application logic needs synchronous
+  communication, but the environment only provide asynchronous
+  communication? How can you use asynchronous communication to
+  implement synchronous communication?\newline
+
+  \begin{itemize}
+    \item \textbf{Sending a Request:} The sender dispatches
+    a message asynchronously to the receiver.
+    \item \textbf{Attaching an Identifier:} Include a unique
+    identifier with the message so that the corresponding
+    response can be recognized.
+    \item \textbf{Blocking for the Response:} The sender then
+    waits (i.e., blocks) until it receives a reply matching
+    the identifier. This wait can be implemented using
+    mechanisms such as callbacks or condition variables.
+    \item \textbf{Resuming Execution:} Once the response is
+    received, the sender unblocks and continues execution.
+  \end{itemize}
+
+
+This approach creates request-response (synchronous) pattern
+over asynchronous channel, ensuring the sender does not proceed
+until the required information is available.\newline
+
+
+
+
+  \item Think about a reverse situation.
+  You need asynchronous communication, but only synchronous
+  communication is available? How can you implement
+  asynchronous communication using synchronous communication?\newline
+
+  \begin{itemize}
+    \item \textbf{Using Concurrency:} Spawn separate thread or process
+    to handle the synchronous communication. Main thread can continue
+    execution without waiting.
+    \item \textbf{Buffering Messages:} Create local message queue or
+    buffer where outgoing messages are stored. Dedicated worker thread
+    performs synchronous send/receive operations behalf of main
+    application.
+    \item \textbf{Event-Driven Notification:} On completing synchronous
+    operation, worker thread notify main thread (e.g., via 
+    event or callback mechanism) that communication is complete,
+    thus decoupling the communication from main control flow.
+  \end{itemize}
+
+By offloading the blocking operations to separate threads and using
+buffering, overall system behaves in an asynchronous manner despite
+underlying synchronous primitives.
+
+\end{enumerate}
+
+
+
+\newpage
+
+\exercise{2}
+
+
+\newpage
+\printbibliography
+\end{document}
