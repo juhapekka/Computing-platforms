@@ -173,7 +173,61 @@ underlying synchronous primitives.
 \newpage
 
 \exercise{2}
+You have an existing program that uses pipes (named or unnamed) as communication mechanism
+between two processes. Now you need to move one of the processes to another computer and
+you need to change the communication mechanism, because pipes can be used only within one
+computer. Which of the mechanisms (shared memory, signal, file, socket, message queue, remote
+procedure call) would you be able to use and why? Please also give reasons for the rest, why
+they would not be suitable in this case.
 
+\subsection*{Suitable mechanisms}
+\begin{itemize}
+    \item \textbf{Socket:} Sockets are designed for network communication.
+    They allow data to be transmitted between processes on
+    different computers reliably and efficiently.
+    \item \textbf{Message Queue:} Distributed message queue systems
+    enable asynchronous communication across machines. They provide
+    buffering, reliability, and decoupling of processes.
+    \item \textbf{Remote Procedure Call (RPC):} RPC abstracts network
+    communication details and allows a process to invoke functions
+    on a remote machine. It encapsulates the network protocols and
+    provides a clean interface for inter-machine communication.
+\end{itemize}
+
+\subsection*{Not suitable mechanisms:}
+
+\begin{itemize}
+    \item \textbf{Shared Memory:} Shared memory is based on idea
+    of multiple processes accessing common memory space, which is
+    only feasible on the same physical computer.
+    \item \textbf{Signal:} Signals are primarily used for simple
+    notifications or process control within a single machine.
+    They do not carry amount of data or offer reliability needed
+    for communication across different machines.
+    \item \textbf{File:} While files can be used for communication
+    via a shared network file system, this approach is prone
+    to synchronization issues. File-based communication is less
+    suitable for real-time or interactive inter-process communication.
+\end{itemize}
+
+
+
+
+\newpage
+
+\exercise{3}
+\textbf{Race condition.} Alice and Bob come to run 4000 meters on a running track that is 400 meters
+long. The python code “race-condition.py” shows how they are counting the laps. Download the
+code separately from Moodle.
+
+\begin{enumerate}[label=\textbf{\makebox[1cm][l]{\Huge\text{(\stylishfont\alph*)}}}, leftmargin=!, labelindent=0pt]
+  \item Run the code several times on your computer.
+  What do you observe?\newline
+  
+  \item Determine the proper lower and upper bound on the final value
+  of the shared variable laps when this concurrent program terminates.
+  Assume threads can execute at any relative speed.
+\end{enumerate}
 
 \newpage
 \printbibliography
