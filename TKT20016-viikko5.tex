@@ -222,12 +222,77 @@ code separately from Moodle.
 
 \begin{enumerate}[label=\textbf{\makebox[1cm][l]{\Huge\text{(\stylishfont\alph*)}}}, leftmargin=!, labelindent=0pt]
   \item Run the code several times on your computer.
-  What do you observe?\newline
+What do you observe?\newline
+
+The Python program creates two threads (Alice and Bob) both running
+10 iterations. In each iteration the thread:
+\begin{itemize}
+    \item Read shared variable \textbf{laps}.
+    \item Compute \textbf{mylap = laps + 1}.
+    \item Assign \textbf{laps = mylap}.
+\end{itemize}
+
+Because there is no synchronization, two threads can interleave
+their operations in a way that leads to \textbf{lost updates}.
+
   
   \item Determine the proper lower and upper bound on the final value
   of the shared variable laps when this concurrent program terminates.
-  Assume threads can execute at any relative speed.
+  Assume threads can execute at any relative speed.\newline
+
+When you run the code several times, you may observe that:
+\begin{itemize}
+    \item The printed lap numbers may not increase sequentially as expected.
+    \item The final value of \textbf{laps} is not always 20 (i.e. 10
+    iterations per thread). It often appears to be lower.
+\end{itemize}
+This is a manifestation of a \emph{race condition} where both
+threads read and update the shared variable without coordination,
+causing some increments to be “lost.”
+
+
+\paragraph{Upper Bound:} 
+The best-case scenario occurs when the threads never interfere
+(i.e. their operations happen sequentially without overlap).
+In that case every increment is preserved and
+\[
+\text{Final value} = 10 + 10 = 20.
+\]
+
+\paragraph{Lower Bound:}
+A worst-case scenario is possible if a thread, due to scheduling delays, reads
+\emph{stale} value before any updates occur and then later writes that
+stale increment, thereby \emph{overwriting} progress made by other thread.
+\begin{itemize}
+    \item Suppose Alice starts first iteration and reads
+    \textbf{laps} when it is \textbf{0} but gets delayed before writing.
+    \item Meanwhile Bob performs all of his $10$ iterations correctly,
+    updating \textbf{laps} from $0$ to $10$.
+    \item Then Alice resumes and, still holding stale value from
+    her first iteration, writes \textbf{laps = 0 + 1 = 1}.
+\end{itemize}
+Even if only one such \emph{rollback} occurs, it can drastically
+reduce the final count. In the extreme, similar delays in several
+iterations could cause many increments to be lost. By careful
+interleaving it is possible for final value to be as low as
+\textbf{1} (i.e. only one effective update is preserved).
+
+\paragraph{Conclusion:}
+\[
+1 \le \texttt{laps} \le 20.
+\]
+One might expect "pairing" of increments to yield lower bound
+of 10, but possibility of \emph{stale reads} and \emph{rollbacks}
+means that in worst-case final value can be as low as 1.
+
+
+\emph{Note: Printed output is not necessarily precise reflection
+of actual execution order, since print statements are unsynchronized
+and may interleave arbitrarily with thread operations.}
+
+
 \end{enumerate}
+
 
 \newpage
 \printbibliography
