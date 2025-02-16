@@ -22,6 +22,9 @@
 \usepackage{bookmark}
 \usepackage{enumitem}
 \usepackage{amsmath}
+\usepackage{listings}
+\lstset{language=Python, basicstyle=\ttfamily\small, breaklines=true}
+\lstset{escapeinside={(*@}{@*)}}
 \usepackage{fontspec}
 \setmainfont{Arial}
 \newfontfamily\stylishfont{Noteworthy}
@@ -290,8 +293,144 @@ means that in worst-case final value can be as low as 1.
 of actual execution order, since print statements are unsynchronized
 and may interleave arbitrarily with thread operations.}
 
+\end{enumerate}
+
+
+
+\newpage
+
+\exercise{4}
+\textbf{Locks and condition variables.} In this exercise we will
+continue with the python code of Alice and Bob counting the laps
+they are running. Here we will modify it so that Alice and Bob
+synchronize with each other properly.
+
+\begin{enumerate}[label=\textbf{\makebox[1cm][l]{\Huge\text{(\stylishfont\alph*)}}}, leftmargin=!, labelindent=0pt]
+
+  \item Modify the python code so that the critical sections are
+  protected properly by using locks. Make your solution as simple
+  as possible but still correct in all possible scenarios. \newline
+
+
+
+\begin{lstlisting}
+  from threading import Thread, current_thread, (*@\colorbox{yellow}{Lock}@*)
+
+  # Alice and Bob will both run n laps
+  n=10
+  # Total number of laps
+  laps=0
+  (*@\colorbox{yellow}{lock = Lock()}@*)
+  
+  # Function executed by both Alice and Bob threads
+  def runlaps():
+      global laps
+      name = current_thread().name    # Is this Alice or Bob?
+      for _ in range(n):
+          (*@\colorbox{yellow}{with lock:}@*)
+              # Which lap is starting?
+              mylap = laps+1
+              print(name + " starting lap: " + str(mylap))
+              # Store the lap number that was finished
+              laps = mylap
+              print(name + " finished lap: " + str(laps))
+  
+  # Create the threads for Alice and Bob
+  alice_thread = Thread(target=runlaps, name="Alice")
+  bob_thread = Thread(target=runlaps, name="Bob")
+  
+  # Start the threads
+  alice_thread.start()
+  bob_thread.start()
+  
+  # Wait for Alice and Bob threads to finish
+  alice_thread.join()
+  bob_thread.join()
+  
+  # Print the total number of laps
+  print("Total laps: " + str(laps))  
+\end{lstlisting}
+
+\newpage
+\item After each lap, Alice waits for Bob to catch up with her
+(on the same lap, so that both have run equal number of laps).
+If Bob happens to be running ahead, he will keep on running
+and lets Alice try to catch him. So Bob just runs for his 10 laps.
+On a good day Bob could pass Alice many times and finish his run
+when Alice still has many laps to go. Use condition variables
+to have Alice wait for Bob after each lap.\newline
+
+
+To implement this we need separate counters for Alice and Bob.
+We also use a \texttt{Condition} variable, which is associated
+with a lock, to allow Alice to wait until Bob's counter catches up.
+
+\begin{lstlisting}
+  from threading import Thread, current_thread, (*@\colorbox{yellow}{Condition}@*)
+
+  # Alice and Bob will both run n laps
+  n=10
+  # Separate lap counters for Alice and Bob
+  (*@\colorbox{yellow}{alice\_laps = 0}@*)
+  (*@\colorbox{yellow}{bob\_laps = 0}@*)
+  
+  # Condition variable with its internal lock
+  cond = Condition()
+  
+  # Function executed by Alice
+  def runlaps_alice():
+      global alice_laps, bob_laps
+      for _ in range(n):
+          (*@\colorbox{yellow}{with cond:}@*)
+              # Which lap is starting?
+              alice_laps += 1
+              print("Alice finished lap: " + str(alice_laps))
+              (*@\colorbox{yellow}{cond.notify\_all()}@*)
+              (*@\colorbox{yellow}{while bob\_laps < alice\_laps:}@*)
+                  (*@\colorbox{yellow}{cond.wait()}@*)
+  
+  # Function executed by Bob
+  def runlaps_bob():
+      global bob_laps
+      for _ in range(n):
+          (*@\colorbox{yellow}{with cond:}@*)
+              bob_laps += 1
+              print("Bob finished lap: " + str(bob_laps))
+              (*@\colorbox{yellow}{cond.notify\_all()}@*)
+  
+  # Create the threads for Alice and Bob
+  alice_thread = Thread(target=runlaps_alice, name="Alice")
+  bob_thread = Thread(target=runlaps_bob, name="Bob")
+  
+  # Start the threads
+  alice_thread.start()
+  bob_thread.start()
+  
+  # Wait for Alice and Bob threads to finish
+  alice_thread.join()
+  bob_thread.join()
+  
+  # Print the total number of laps
+  print("Final laps: Alice = " + str(alice_laps) + ", Bob = " + str(bob_laps))
+  \end{lstlisting}
+
 
 \end{enumerate}
+
+
+
+
+
+
+
+
+\newpage
+
+\exercise{5}
+
+
+
+
 
 
 \newpage
