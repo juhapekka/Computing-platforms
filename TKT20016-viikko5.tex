@@ -9,12 +9,11 @@
 \usepackage{lipsum}
 \usepackage{comment}
 \usepackage{enumitem}
-\usepackage{listings}
 \usepackage{xcolor}
 \usepackage{longtable}
 %\usepackage{cite}
 \usepackage{pgfgantt}
-\usepackage{amsmath}
+\usepackage{amsmath, amssymb}
 \usepackage{tikz}
 \usepackage[margin=1in]{geometry}
 \usepackage[backend=biber, style=numeric]{biblatex}
@@ -23,7 +22,7 @@
 \usepackage{enumitem}
 \usepackage{amsmath}
 \usepackage{listings}
-\lstset{language=Python, basicstyle=\ttfamily\small, breaklines=true}
+\lstset{language=Python, basicstyle=\ttfamily\small, breaklines=true,columns=fullflexible}
 \lstset{escapeinside={(*@}{@*)}}
 \usepackage{fontspec}
 \setmainfont{Arial}
@@ -31,7 +30,7 @@
 %\newfontfamily\stylishfont{Zapfino}
 \addbibresource{references.bib}
 \usetikzlibrary{calc}
-
+\usepackage{xcolor}
 
 \lstdefinestyle{pidstyle}{
     basicstyle=\ttfamily\footnotesize,
@@ -424,13 +423,120 @@ with a lock, to allow Alice to wait until Bob's counter catches up.
 
 
 
+
+
 \newpage
 
 \exercise{5}
+\textbf{One-lane bridge with locks and condition variables.}
+There is a river between two villages \(A\) and \(B\) and
+the villages are connected by a narrow one-lane bridge, 
+where cars are allowed to drive only in one direction in a time.
+There can be many cars on the bridge at a time, but only in 
+one direction. When cars are passing the bridge from \(A\) to \(B\) 
+(westbound), then the cars willing to cross the bridge from \(B\)
+to \(A\) (eastbound) have to wait. The python code “one-lane-bridge.py”
+contains skeleton code for the one-lane bridge. The car processes call
+bridge.enter\_<direction> before using the bridge, and
+bridge.exit\_<direction>, when they leave the bridge. A car 
+process using the bridge executes the drive\_<direction> functions.
+Complete the python code by defining the bridge.enter\_west,
+bridge.exit\_west, bridge.enter\_east, and bridge.exit\_east functions.
+Remember to define all your locks, condition variables and counters.
+The solution does not need to be fair, which means that the waiting
+times on the other end may be very long.\newline
 
 
+\begin{lstlisting}
+  from threading import Thread, current_thread, (*@\colorbox{yellow}{Lock, Condition}@*)
+  
+  # An object representing a one-lane bridge
+  class Bridge():    
+      def __init__(self):
+          # Keep track of cars currently on the bridge
+          # Add here the variables, locks and condition variables needed for synchronization
+          self.cars = set()
+          (*@\colorbox{yellow}{self.lock = Lock()}@*)
+          (*@\colorbox{yellow}{self.cond = Condition(self.lock)}@*)
+          (*@\colorbox{yellow}{self.west\_count = 0}@*)
+          (*@\colorbox{yellow}{self.east\_count = 0}@*)
+  
+      # A car wishing to cross the bridge westbound will call this when entering the bridge
+      def enter_west(self, name):
+          # Add code here to synchronize the cars on the bridge properly
+          (*@\colorbox{yellow}{with self.cond:}@*)
+              (*@\colorbox{yellow}{while self.east\_count > 0:}@*)
+                  (*@\colorbox{yellow}{self.cond.wait()}@*)
+              (*@\colorbox{yellow}{self.west\_count += 1}@*)
+              self.cars.add(name)
+              print("Cars on the bridge: " + str(self.cars))
+          return
+          
+      # A car wishing to cross the bridge westbound will call this when exiting the bridge
+      def exit_west(self, name):
+          # Add code here to synchronize the cars on the bridge properly
+          (*@\colorbox{yellow}{with self.cond:}@*)
+              (*@\colorbox{yellow}{self.west\_count -= 1}@*)
+              self.cars.remove(name)
+              print("Cars on the bridge: " + str(self.cars))
+              (*@\colorbox{yellow}{if self.west\_count == 0:}@*)
+                  (*@\colorbox{yellow}{self.cond.notify\_all()}@*)
+          return
+  
+      # A car wishing to cross the bridge eastbound will call this when entering the bridge
+      def enter_east(self, name):
+          # Add code here to synchronize the cars on the bridge properly
+          (*@\colorbox{yellow}{with self.cond:}@*)
+              (*@\colorbox{yellow}{while self.west\_count > 0:}@*)
+                  (*@\colorbox{yellow}{self.cond.wait()}@*)
+              (*@\colorbox{yellow}{self.east\_count += 1}@*)
+              self.cars.add(name)
+              print("Cars on the bridge: " + str(self.cars))
+          return
+  
+      # A car wishing to cross the bridge eastbound will call this when exiting the bridge
+      def exit_east(self, name):
+          # Add code here to synchronize the cars on the bridge properly
+          (*@\colorbox{yellow}{with self.cond:}@*)
+              (*@\colorbox{yellow}{self.east\_count -= 1}@*)
+              self.cars.remove(name)
+              print("Cars on the bridge: " + str(self.cars))
+              (*@\colorbox{yellow}{if self.east\_count == 0:}@*)
+                  (*@\colorbox{yellow}{self.cond.notify\_all()}@*)
+          return
+  
+          
+  # A car driving westbound over the bridge
+  def drive_westbound(bridge):
+      name = current_thread().name
+      print(name + ": Driving westbound...")
+      bridge.enter_west(name)
+      print(name + ": Westbound on the bridge")
+      bridge.exit_west(name)
+      print(name + ": Crossed the bridge westbound")
+  
+  # A car driving eastbound over the bridge
+  def drive_eastbound(bridge):
+      name = current_thread().name
+      print(name + ": Driving eastbound...")
+      bridge.enter_east(name)
+      print(name + ": Eastbound on the bridge")
+      bridge.exit_east(name)
+      print(name + ": Crossed the bridge eastbound")
+  
+  # Initialize the bridge and the car threads
+  bridge = Bridge()
+  Twest = [Thread(target=drive_westbound, kwargs={"bridge": bridge}, name="W" + str(i)) for i in range(10)]
+  Teast = [Thread(target=drive_eastbound, kwargs={"bridge": bridge}, name="E" + str(i)) for i in range(10)]
+  
+  # Start the car threads
+  for i in range(10):
+      Twest[i].start()
+      Teast[i].start()
+  \end{lstlisting}
 
-
+\paragraph{This solution is not fair.}If cars continuously enter
+one direction, waiting cars on other side can be left waiting indefinitely.
 
 
 \newpage
