@@ -233,6 +233,303 @@ for i in range(10):
 \end{enumerate}
 
 
+
+
+
+
+
+\newpage
+\exercise{2}
+\paragraph{Deadlock.} (Problem 6.6 from [Stallings 2018], modified to Python) In the code
+below, three threads are competing for six resources labeled A to F.
+\begin{verbatim}
+#thread 1       #thread 2       #thread 3
+while True:     while True:     while True:
+    get(A)          get(D)          get(C)
+    get(B)          get(E)          get(F)
+    get(C)          get(B)          get(D)
+    # critical region: # critical region: # critical region:
+    # use A, B, C   # use D, E, B   # use C, F, D
+    release(A)      release(D)      release(C)
+    release(B)      release(E)      release(F)
+    release(C)      release(B)      release(D)
+\end{verbatim}
+
+\begin{enumerate}[label=\textbf{\makebox[1cm][l]{\Huge\text{(\stylishfont\alph*)}}}, leftmargin=!, labelindent=0pt]
+    \item Using a resource allocation graph (Figures 6.5 and 6.6 in [Stallings 2018],
+    also in lecture slides), show the possibility of deadlock in this implementation.\newline
+
+    we have resource allocation graph with two types of vertices:
+\begin{itemize}
+    \item \textbf{Threads (T1, T2, T3)}.
+    \item \textbf{Resources (A, B, C, D, E, F)}.
+\end{itemize}
+then we draw:
+\begin{itemize}
+    \item \(\text{T} \rightarrow \text{R}\) if thread T is requesting resource R.
+    \item \(\text{R} \rightarrow \text{T}\) if resource R is currently allocated to thread T.
+\end{itemize}
+
+\paragraph{Possible interleaving that leads to deadlock:}
+\begin{enumerate}
+    \item \textbf{T1} has successfully acquired \(\{A, B\}\) and is requesting \(C\).
+    \item \textbf{T2} has successfully acquired \(\{D, E\}\) and is requesting \(B\).
+    \item \textbf{T3} has successfully acquired \(\{C, F\}\) and is requesting \(D\).
+\end{enumerate}
+From here we have:
+\[
+T1 \rightarrow C, \quad
+C \rightarrow T3, \quad
+T3 \rightarrow D, \quad
+D \rightarrow T2, \quad
+T2 \rightarrow B, \quad
+B \rightarrow T1.
+\]
+E.g. a cycle:
+\[
+T1 \rightarrow C \rightarrow T3 \rightarrow D \rightarrow T2 \rightarrow B \rightarrow T1,
+\]
+Deadlock situation where each thread is holding resource next thread want.
+
+\newpage
+    \item Modify the order of some of the get requests to prevent the possiblity of any deadlock.
+    You cannot move requests across threads, only change the order inside each thread. Use a
+    resource allocation graph to justify your answer.\newline
+
+    We can enforce \textbf{global ordering} of resource acquisition. Suppose we impose
+    alphabetical order \(A < B < C < D < E < F\). Threads must request its resources
+    in ascending order and release them in reverse order. A possible reordering is:
+
+    \begin{itemize}
+        \item \textbf{Thread 1}: \(\texttt{get(A)}\), \(\texttt{get(B)}\), \(\texttt{get(C)}\) 
+        \item \textbf{Thread 2}: \(\texttt{get(B)}\), \(\texttt{get(D)}\), \(\texttt{get(E)}\)
+        \item \textbf{Thread 3}: \(\texttt{get(C)}\), \(\texttt{get(D)}\), \(\texttt{get(F)}\)
+    \end{itemize}
+    
+    No circular wait can form because there is no way to construct a cycle if every thread
+    requests resources according to the same global ordering.
+    
+    \paragraph{Revised Resource Allocation Graph}
+    \begin{itemize}
+        \item \textbf{T1} edges always proceed \(T1 \rightarrow A \rightarrow B \rightarrow C\).
+        \item \textbf{T2} edges always proceed \(T2 \rightarrow B \rightarrow D \rightarrow E\).
+        \item \textbf{T3} edges always proceed \(T3 \rightarrow C \rightarrow D \rightarrow F\).
+    \end{itemize}
+    No thread requests resource with lower label than any resource it already holds hence we
+    avoid circular-wait condition.
+\end{enumerate}
+
+
+
+
+
+
+\newpage
+\exercise{3}
+
+\paragraph{SSDs.} In this exercise, we use a Python simulator from OSTEP. You find
+the code at https://github.com/remzi-arpacidusseau/ostep-homework/blob/master/file-ssd.
+Download the Python code ssd.py and read the README of the simulator. Answer the homework
+questions 1-5 from OSTEP Chapter 44. You find the homework questions at the end of the chapter
+at https://pages.cs.wisc.edu/~remzi/OSTEP/file-ssd.pdf. For question 1 running with seed 
+1 suffices.\newline
+
+    1. The homework will mostly focus on the log-structured SSD, which
+    is simulated with the “-T log” flag. We’ll use the other types of
+    SSDs for comparison. First, run with flags -T log -s 1 -n 10
+    -q. Can you figure out which operations took place? Use -c to
+    check your answers (or just use -C instead of -q -c). Use different
+    values of -s to generate different random workloads.
+\scriptsize {
+    \begin{verbatim}
+        write(12, u)
+        write(32, M)
+        read(32) -> M
+        write(38, 0)
+        write(36, e)
+        trim(36)
+        read(32) -> M
+        trim(32)
+        read(12) -> u
+        read(12) -> u
+    \end{verbatim}
+}
+    2. Now just show the commands and see if you can figure out the
+    intermediate states of the Flash. Run with flags -T log -s 2 -n
+    10 -C to show each command. Now, determine the state of the
+    Flash between each command; use -F to show the states and see if
+    you were right. Use different random seeds to test your burgeoning
+    expertise.
+    \scriptsize {
+        \begin{verbatim}
+                                          State iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii
+        cmd   0:: write(36, F) -> success State vEEEEEEEEE iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii
+        cmd   1:: write(29, 9) -> success State vvEEEEEEEE iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii
+        cmd   2:: write(19, I) -> success State vvvEEEEEEE iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii
+        cmd   3:: trim(19) -> success     State vvvEEEEEEE iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii
+        cmd   4:: write(22, g) -> success State vvvvEEEEEE iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii
+        cmd   5:: read(29) -> 9           State vvvvEEEEEE iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii
+        cmd   6:: read(22) -> g           State vvvvEEEEEE iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii
+        cmd   7:: write(28, e) -> success State vvvvvEEEEE iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii
+        cmd   8:: read(36) -> F           State vvvvvEEEEE iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii
+        cmd   9:: write(49, F) -> success State vvvvvvEEEE iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii
+        \end{verbatim}
+    }
+    3. Let’s make this problem ever so slightly more interesting by adding
+    the -r 20 flag. What differences does this cause in the commands?
+    Use -c again to check your answers.
+    \scriptsize {
+        \begin{verbatim}
+        cmd   0:: read(41) -> fail: uninitialized read
+        cmd   1:: write(33, j) -> success
+        cmd   2:: write(30, A) -> success
+        cmd   3:: read(33) -> j
+        cmd   4:: write(49, W) -> success
+        cmd   5:: write(22, g) -> success
+        cmd   6:: read(23) -> fail: uninitialized read
+        cmd   7:: read(22) -> g
+        cmd   8:: write(28, e) -> success
+        cmd   9:: read(33) -> j
+        \end{verbatim}
+    }
+    We see failed commands.\newline
+
+\newpage
+    4. Performance is determined by the number of erases, programs, and
+    reads (we assume here that trims are free). Run the same workload
+    again as above, but without showing any intermediate states (e.g.,
+    -T log -s 1 -n 10). Can you estimate how long this workload
+    will take to complete? (default erase time is 1000 microseconds,
+    program time is 40, and read time is 10) Use the -S flag to check
+    your answer. You can also change the erase, program, and read
+    times with the -E, -W, -R flags.\newline
+    \scriptsize {
+        \begin{verbatim}
+            FTL   (empty)
+            Block 0          1          2          3          4          5          6          
+            Page  0000000000 1111111111 2222222222 3333333333 4444444444 5555555555 6666666666 
+                  0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 
+            State iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii 
+            Data                                                                               
+            Live                                                                               
+            
+            
+            FTL    12:  0  38:  2 
+            Block 0          1          2          3          4          5          6          
+            Page  0000000000 1111111111 2222222222 3333333333 4444444444 5555555555 6666666666 
+                  0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 
+            State vvvvEEEEEE iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii iiiiiiiiii 
+            Data  uM0e                                                                         
+            Live  + +                                                                          
+            
+            Physical Operations Per Block
+            Erases   1          0          0          0          0          0          0          Sum: 1
+            Writes   4          0          0          0          0          0          0          Sum: 4
+            Reads    4          0          0          0          0          0          0          Sum: 4
+            
+            Logical Operation Sums
+              Write count 4 (0 failed)
+              Read count  4 (0 failed)
+              Trim count  2 (0 failed)
+            
+            Times
+              Erase time 1000.00
+              Write time 160.00
+              Read time  40.00
+              Total time 1200.00
+        \end{verbatim}
+    }
+
+    5. Now, compare performance of the log-structured approach and the
+    (very bad) direct approach (-T direct instead of -T log). First,
+    estimate how you think the direct approach will perform, then check
+    your answer with the -S flag. In general, how much better will the
+    log-structured approach perform than the direct one?\newline
+
+    Logical mapped:
+    \scriptsize {
+        \begin{verbatim}
+            Times
+            Erase time 1000.00
+            Write time 160.00
+            Read time  40.00
+            Total time 1200.00
+        \end{verbatim}
+    }
+    Direct mapped:
+    \scriptsize {
+        \begin{verbatim}
+            Times
+            Erase time 4000.00
+            Write time 280.00
+            Read time  70.00
+            Total time 4350.00
+        \end{verbatim}
+    }
+
+
+
+
+\newpage
+\exercise{4}
+\paragraph{UNIX file management.} Read Chapter 12.8 [Stalling, 2018, pp. 580-585] and
+answer the following questions. Consider the organization of UNIX file as represented
+by the inode (see Figure 12.15, also provided below). Assume there are 12 direct block
+pointers, and a singly, doubly, and triply indirect pointer to each inode. Assume further
+that the system block size and the disk sector size are both 8 KB, and the disk block
+pointer is 32 bits, with 8 bits to identify the physical disk and 24 bits to identify
+the physical block.
+
+\begin{enumerate}[label=\textbf{\makebox[1cm][l]{\Huge\text{(\stylishfont\alph*)}}}, leftmargin=!, labelindent=0pt]
+    \item What is the maximum file size supported by this system?
+    
+    \begin{itemize}
+        \item Direct: 12 blocks * 8192B = 98304 B
+        \item Singly indirect: 2048 pointers * 8192B = 16777216 B (16GB)
+        \item Doubly indirect: \(2048^2\) * 8192 = 4194304 * 8192 \(\approx\) 34359738368 B (34GB)
+        \item Triply indirect: \(2048^3\) * 8192 = 8589934592 * 8192 \(\approx\) 70368744177664 B (70TB)
+    \end{itemize}
+    
+    \item What is the maximum system partition (i.e. physical disk) supported by this
+    system?
+    \begin{itemize}
+        \item With 24 bits for physical block number:
+          \[
+          2^{24} = 16777216 \text{ blocks per disk}
+          \]
+        \item Each block is 8192 B:
+          \[
+          16777216 \times 8192 = 137438953472 \text{ B} = 2^{24+13} = 2^{37} \text{ B}
+          \]
+        \item maximum partition size:
+          \[
+          2^{37} \text{ B} \approx 137.44 \text{ GB}
+          \]
+      \end{itemize}
+
+    \item Assuming no information other than the the file inode is already on
+    the main memory, how many disk accesses are required to access the byte in
+    position 13 423 956.
+
+    \begin{itemize}[leftmargin=2em]
+        \item block index:  
+          \[
+          \text{Block index} = \left\lfloor \frac{13\,423\,956}{8192} \right\rfloor \approx 1638
+          \]
+        \item Mapping:
+          \begin{itemize}
+            \item Direct pointers cover blocks 0 -11
+            \item The singly indirect block covers blocks 12 to 12 + 2048 - 1 = 2059
+          \end{itemize}
+          1638 is in singly indirect range:
+        \item Disk accesses needed (inode is already in memory):
+          \begin{itemize}
+            \item 1 access to read the singly indirect block.
+            \item 1 access to read the actual data block.
+          \end{itemize}
+      \end{itemize}
+\end{enumerate}
+
 \newpage
 \printbibliography
 \end{document}
