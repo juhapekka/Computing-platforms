@@ -1,0 +1,238 @@
+% !TEX program = xelatex
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{titling}
+\usepackage{titlesec}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+\usepackage{lipsum}
+\usepackage{comment}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{longtable}
+%\usepackage{cite}
+\usepackage{pgfgantt}
+\usepackage{amsmath, amssymb}
+\usepackage{tikz}
+\usepackage[margin=1in]{geometry}
+\usepackage[backend=biber, style=numeric]{biblatex}
+%\usepackage{hyperref}
+\usepackage{bookmark}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{listings}
+\lstset{language=Python, basicstyle=\ttfamily\small, breaklines=true,columns=fullflexible}
+\lstset{escapeinside={(*@}{@*)}}
+\usepackage{fontspec}
+\setmainfont{Arial}
+\newfontfamily\stylishfont{Noteworthy}
+%\newfontfamily\stylishfont{Zapfino}
+\addbibresource{references.bib}
+\usetikzlibrary{calc}
+\usepackage{xcolor}
+
+\lstdefinestyle{pidstyle}{
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    escapechar=\#, % Define escape character for inline LaTeX commands
+    linewidth=\textwidth,
+    basicstyle=\ttfamily\scriptsize
+}
+
+\renewcommand{\maketitle}{%
+  \begin{leftmark}
+    \vspace*{\baselineskip} % Add a bit of vertical space
+
+%    \includegraphics[width=4cm]{example-image-a} % Add an image before the title. you will need to replace the image path with your own
+
+%    \vspace{0.5cm} % Add vertical space before title
+
+    \textbf{\fontsize{18}{36}\selectfont \thetitle} % Font Size and Bold Title
+
+     \vspace{0.05cm} % Add vertical space before subtitle
+%    \textit{\Large \theauthor}  % Subtitle / Author
+    \vspace{\baselineskip} % Add vertical space after subtitle
+     \rule{\textwidth}{0.4pt} % Add a horizontal line
+
+   \end{leftmark}
+%    \thispagestyle{empty} % Prevent header/footer on the title page
+}
+
+
+% Section Formatting
+\titleformat{\section}
+  {\normalfont\fontsize{18}{22}\bfseries} % Font and style
+  {\thesection}         % Section number
+  {1em}                   % Horizontal space after section number
+  {}                     % Code before the section name
+  []                     % Code after the section name
+
+\titleformat{\subsection}
+  {\normalfont\fontsize{14}{18}\bfseries} % Font and style
+  {\thesubsection}         % Subsection number
+  {1em}                   % Horizontal space after subsection number
+  {}                     % Code before the subsection name
+  []                     % Code after the subsection name
+
+\setlength{\parindent}{0pt}
+
+\title{Computing platforms (Spring 2025)\newline
+week 6}
+\author{Juha-Pekka Heikkilä}
+
+
+
+\pagestyle{fancy}
+\fancyhf{}
+
+\renewcommand{\headrulewidth}{0pt}
+
+\newcommand{\footerline}{\makebox[\textwidth]{\hrulefill}}
+
+\newcommand{\footercontent}{%
+    \begin{tabular}{@{}l@{}}
+        \footerline \\
+        \leftmark \hfill \rlap{\thepage}
+    \end{tabular}
+}
+
+\fancyfoot[C]{\footercontent}
+
+
+\newcommand{\exercise}[1]{
+    \section*{Exercise #1}
+    \markboth{Exercise #1}{}
+}
+
+
+\begin{document}
+\maketitle
+
+
+\exercise{1}
+\paragraph{Readers/Writers with priorities.} The lecture slides
+give an example of solving the Readers/Writers problem with locks
+and condition variables. That solution is inefficient in the sense
+that when both writers and readers are waiting when a writer finishes,
+they will fight over who will go next. The python code
+“readers-writers.py” gives another solution that solves the problem.
+Download the code separately from Moodle.
+
+\begin{enumerate}[label=\textbf{\makebox[1cm][l]{\Huge\text{(\stylishfont\alph*)}}}, leftmargin=!, labelindent=0pt]
+    \item Can a writer starve in this solution? Can a reader
+    starve in this solution?
+    \paragraph{Writer can starve.} Once writer finishes all readers are allowed to proceed
+    in concurrent manner. This race can preempt waiting writer and
+    possibly starve writer.
+    \paragraph{Reader cannot starve.} When writer finish all readers can
+    proceed simultaneously.
+
+    \item Who has higher priority, readers or writers? Why?
+    \paragraph{Readers have higher priority} When writer finishes all
+    readers proceed together, this give advantage to readers.
+    
+    \item Modify the code so that writers have priority.
+    \begin{lstlisting}
+import threading
+
+# Keep track of currently reading threads
+readers=set()
+# Keep track of currently writing threads
+writers=set()
+# Keep track of the number of readers waiting to read
+waitingreaders=0
+# Keep track of the number of writers waiting to write
+waitingwriters=0
+# Lock for protecting the shared variables
+lock = threading.Lock()
+# Condition variable where readers wait for their turn to read
+oktoread = threading.Condition(lock)
+# Condition variable where writers wait for their turn to write
+oktowrite = threading.Condition(lock)
+
+# Function executed by the readers
+def reader():
+    global readers
+    global writers
+    global waitingreaders
+    global waitingwriters
+    # Retrieve the name of this thread
+    name = threading.current_thread().name
+    # Each reader will read three times
+    for _ in range(3):
+        lock.acquire()
+        (*@\colorbox{yellow}{\# If there are currently writers readers needs to wait}@*)
+        while len(writers) > 0 (*@\colorbox{yellow}{or waitingwriters > 0}@*):
+            waitingreaders += 1
+            oktoread.wait()
+            waitingreaders -= 1
+        (*@\colorbox{yellow}{\# Now there are no writers}@*)
+        readers.add(name)
+        print(name + ": Starts reading")
+        print("Current readers: " + str(readers) + " Current writers: " + str(writers))
+        lock.release()
+        print(name + ": Reading...")
+        lock.acquire()
+        print(name + ": Finishes reading")
+        readers.remove(name)
+        # If there are no readers left, let the writers start writing
+        if len(readers) == 0:
+            oktowrite.notify()
+        lock.release()
+
+# Function executed by the writers
+def writer():
+    global readers
+    global writers
+    global waitingreaders
+    global waitingwriters
+    # Retrieve the name of this thread
+    name = threading.current_thread().name
+    # Each writer writes three times
+    for _ in range(3):
+        lock.acquire()
+        (*@\colorbox{yellow}{\# Modified for writer priority}@*)
+        while len(writers) > 0 (*@\colorbox{yellow}{or len(readers) > 0}@*):
+            waitingwriters += 1
+            oktowrite.wait()
+            waitingwriters -= 1
+        # Now there are no current readers/writers
+        writers.add(name)
+        print(name + ": Starts writing")
+        print("Current readers: " + str(readers) + " Current writers: " + str(writers))
+        lock.release()
+        print(name + ": Writing...")    
+        lock.acquire()
+        print(name + ": Finishes writing")
+        writers.remove(name)
+        (*@\colorbox{yellow}{\# Modified notification order: notify waiting writers first, then readers}@*)
+        if waitingwriters > 0 :
+            oktowrite.notify()
+        elif waitingreaders > 0:
+            oktoread.notify_all()
+        lock.release()
+
+# Create the reader and writer threads
+readerThreads = [threading.Thread(target=reader, name = "R" + str(i)) for i in range(10)]
+writerThreads = [threading.Thread(target=writer, name = "W" + str(i)) for i in range(10)]
+
+# Start the reader and writer threads
+for i in range(10):
+    readerThreads[i].start()
+    writerThreads[i].start()
+        \end{lstlisting}
+    
+    \item Can a reader starve in your solution? Can a writer starve
+    in your solution?
+    \paragraph{Reader: yes, can starve.} if writers keep on arriving
+    continously readers never get to execute.
+    \paragraph{Writer: no, can\'t starve.} Writers have priority, if
+    there is writer waiting readers will be blocked.
+
+\end{enumerate}
+
+
+\newpage
+\printbibliography
+\end{document}
