@@ -530,6 +530,44 @@ the physical block.
       \end{itemize}
 \end{enumerate}
 
+
+
+
+
+\newpage
+\exercise{5}
+
+\paragraph{Bob wants to analyze the network traffic on his computer.} To gather
+the data, he creates a system that inspects every network packet that goes through
+his network device. To store the data, he creates a new file for each network packet
+using a timestamp as a file name and stores the size of the network packet in the file.
+Soon he has gathered huge amounts of data and he has a huge amount of small files in
+his system.
+
+\begin{enumerate}[label=\textbf{\makebox[1cm][l]{\Huge\text{(\stylishfont\alph*)}}}, leftmargin=!, labelindent=0pt]
+    \item What are the disadvantages of this approach?
+      \begin{itemize}
+        \item Excessive file system overhead.
+        \item Poor performance due to many small file creations and system calls.
+        \item Increased fragmentation and slower file system operations.
+        \item Difficulty managing and backing up a huge number of files.
+      \end{itemize}
+
+    \item After running this system for some time, the whole computer system crashed.
+    What could be the reason for this?
+    \begin{itemize}
+        \item Running out of storage space or inodes due to an enormous number of files.
+        \item Overloaded file system metadata management causing memory exhaustion or
+        degraded system performance.
+      \end{itemize}
+    \item How should the data be organized instead?
+      \begin{itemize}
+        \item Store data into larger files. e.g., appending many packets  to a single file.
+        \item Organize data by connection or time intervals rather than per packet.
+        \item maybe use database that can efficiently store and index numerous records.
+      \end{itemize}
+\end{enumerate}
+
 \newpage
 \printbibliography
 \end{document}
